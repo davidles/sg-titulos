@@ -67,6 +67,7 @@ export default async function Home() {
   const session = await getServerSession(authOptions);
   const userName = session?.user?.name ?? "María González";
   const userLegajo = session?.user?.legajo ?? "001245";
+  const userUsername = session?.user?.username ?? "mgonzalez";
   const { solicitudes, menuOptions } = await fetchPortalData();
 
   return (
@@ -157,6 +158,7 @@ export default async function Home() {
                 <div className="text-sm text-slate-600">
                   <p className="font-semibold text-slate-900">{userName}</p>
                   <p>Legajo: {userLegajo}</p>
+                  <p>Usuario: {userUsername}</p>
                 </div>
                 <SignOutButton />
               </div>
@@ -272,7 +274,7 @@ export default async function Home() {
                       Experiencia segura y transparente
                     </h3>
                     <p className="mt-3 text-sm text-blue-900/80">
-                      Autenticación con correo institucional, registro para egresados y seguimiento en tiempo real de cada etapa del trámite.
+                      Autenticación con usuario institucional, registro para egresados y seguimiento en tiempo real de cada etapa del trámite.
                     </p>
                   </article>
                   <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
