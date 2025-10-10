@@ -1,24 +1,13 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const demoUsers = [
-  {
-    id: "1",
-    name: "María González",
-    email: "maria.gonzalez@universidad.edu",
-    legajo: "001245",
-    password: "seguro123",
-  },
-  {
-    id: "2",
-    name: "Juan Pérez",
-    email: "juan.perez@universidad.edu",
-    legajo: "001578",
-    password: "titulo2024",
-  },
-];
+import type { DemoUser } from "./types";
+import { DEMO_USERS } from "./mocks/demoUsers";
+
+const NEXT_AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? "development-secret";
 
 export const authOptions: NextAuthOptions = {
+  secret: NEXT_AUTH_SECRET,
   session: {
     strategy: "jwt",
   },
@@ -29,19 +18,23 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "Credenciales institucionales",
       credentials: {
-        email: { label: "Correo institucional", type: "email" },
+        username: { label: "Usuario", type: "text" },
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.username || !credentials?.password) {
           return null;
         }
 
-        const matchedUser = demoUsers.find(
-          (user) => user.email === credentials.email.trim().toLowerCase()
+        const matchedUser = DEMO_USERS.find(
+          (user) => user.username === credentials.username.trim().toLowerCase()
         );
 
         if (!matchedUser) {
+          return null;
+        }
+
+        if (matchedUser.accountStatus !== "ACTIVE") {
           return null;
         }
 
@@ -52,10 +45,19 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: matchedUser.id,
-          name: matchedUser.name,
-          email: matchedUser.email,
-          legajo: matchedUser.legajo,
+          id: matchedUser.userId,
+          name: matchedUser.fullName,
+          username: matchedUser.username,
+          legajo: matchedUser.recordNumber,
+          nivelControl: matchedUser.controlLevelId,
+          personaId: matchedUser.personId,
+        } as {
+          id: string;
+          name: string;
+          username: string;
+          legajo: string;
+          nivelControl: string;
+          personaId: string;
         };
       },
     }),
@@ -63,13 +65,25 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.legajo = (user as { legajo?: string }).legajo;
+        const typedUser = user as {
+          legajo?: string;
+          username?: string;
+          nivelControl?: string;
+          personaId?: string;
+        };
+        token.legajo = typedUser.legajo;
+        token.username = typedUser.username;
+        token.nivelControl = typedUser.nivelControl;
+        token.personaId = typedUser.personaId;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.legajo = typeof token.legajo === "string" ? token.legajo : undefined;
+        session.user.username = typeof token.username === "string" ? token.username : undefined;
+        session.user.nivelControl = typeof token.nivelControl === "string" ? token.nivelControl : undefined;
+        session.user.personaId = typeof token.personaId === "string" ? token.personaId : undefined;
       }
       return session;
     },

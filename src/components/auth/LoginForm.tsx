@@ -5,12 +5,12 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 interface LoginFormState {
-  email: string;
+  username: string;
   password: string;
 }
 
 const initialState: LoginFormState = {
-  email: "",
+  username: "",
   password: "",
 };
 
@@ -31,7 +31,7 @@ export function LoginForm() {
     setErrorMessage(null);
 
     const signInResult = await signIn("credentials", {
-      email: formValues.email,
+      username: formValues.username,
       password: formValues.password,
       redirect: false,
     });
@@ -39,7 +39,7 @@ export function LoginForm() {
     setIsLoading(false);
 
     if (signInResult?.error) {
-      setErrorMessage("Correo institucional o contraseña inválidos.");
+      setErrorMessage("Usuario o contraseña inválidos.");
       return;
     }
 
@@ -50,17 +50,17 @@ export function LoginForm() {
   return (
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
       <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="email">
-          Correo institucional
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="username">
+          Usuario
         </label>
         <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          placeholder="nombre.apellido@universidad.edu"
+          id="username"
+          name="username"
+          type="text"
+          autoComplete="username"
+          placeholder="ej: mgonzalez"
           className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100"
-          value={formValues.email}
+          value={formValues.username}
           onChange={handleChange}
           required
         />
