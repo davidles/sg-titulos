@@ -14,6 +14,14 @@ Aplicación web construida con [Next.js](https://nextjs.org), TypeScript y Tailw
 - Node.js 18 o superior.
 - npm (incluido con Node.js).
 
+## Variables de entorno
+
+- `NEXTAUTH_SECRET`: clave secreta utilizada para firmar y cifrar los tokens de sesión. Para desarrollo puedes definir un valor cualquiera en `.env.local`, por ejemplo:
+  ```bash
+  NEXTAUTH_SECRET=development-secret
+  ```
+  En entornos productivos genera un valor seguro (por ejemplo con `openssl rand -hex 32`).
+
 ## Cómo ejecutar el proyecto
 
 1. Instalar dependencias:
