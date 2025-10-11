@@ -89,10 +89,8 @@ export default async function LoginPage() {
 
       <footer className="border-t border-slate-200 bg-white">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-6 py-6 text-sm text-slate-500 md:flex-row md:items-center md:justify-between">
-          <p>Secretaría General – Universidad [Nombre]</p>
-          <p>
-            Atención al usuario: [correo institucional] | [Teléfono] · Horario de atención: [horario]
-          </p>
+          <p>Secretaría General – CRUC IUA Córdoba</p>
+          <p>sgeneral@iua.edu.ar · 351-4434555 · Lunes a viernes de 9:00 a 13:00</p>
         </div>
       </footer>
     </div>
