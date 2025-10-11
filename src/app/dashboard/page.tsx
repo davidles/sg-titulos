@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
@@ -7,6 +8,7 @@ import type { MenuOption, Solicitud } from "@/types/portal";
 
 import { StatusBadge } from "@/app/dashboard/status-badge";
 import { fetchPortalData } from "@/app/dashboard/portal-data";
+import logoImage from "@/app/logo.png";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -25,45 +27,39 @@ export default async function DashboardPage() {
     <div className="min-h-screen bg-slate-100">
       <header className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-blue-700/10 to-transparent" />
-        <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
-              Sistema de Gestión de Títulos Universitarios
-            </p>
-            <h1 className="text-2xl font-semibold text-slate-900">Panel principal del egresado</h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Gestione sus solicitudes, acceda a documentación y siga el estado de cada trámite.
-            </p>
-          </div>
-          <div className="text-right text-sm text-slate-600">
-            <p className="font-semibold text-slate-900">{userName}</p>
-            <p>Legajo: {userLegajo}</p>
-            <p>Usuario: {userUsername}</p>
+        <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
+          <Image src={logoImage} alt="Sistema control de solicitudes de título" className="h-24 w-auto" />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
+                {session.user?.image ? (
+                  <Image
+                    src={session.user.image}
+                    alt={userName ?? "Usuario"}
+                    fill
+                    sizes="40px"
+                    className="object-cover"
+                  />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-slate-500">
+                    {userName?.slice(0, 2).toUpperCase() ?? "USR"}
+                  </span>
+                )}
+              </div>
+              <div className="text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">{userName}</p>
+                <p className="text-xs">Legajo: {userLegajo}</p>
+                <p className="text-xs">Usuario: {userUsername}</p>
+              </div>
+            </div>
+            <SignOutButton className="border-slate-300 text-slate-700 hover:border-blue-700 hover:text-blue-700">
+              Cerrar sesión
+            </SignOutButton>
           </div>
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-6xl space-y-10 px-6 py-10">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex lg:items-center lg:justify-between lg:gap-6">
-          <div className="flex items-center gap-4">
-            <div className="hidden h-16 w-16 items-center justify-center rounded-full bg-blue-700 text-xl font-semibold text-white sm:flex">
-              SG
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
-                Secretaría General – Sistema de Gestión de Títulos
-              </p>
-              <h2 className="mt-1 text-2xl font-semibold text-slate-900">Panel principal del egresado</h2>
-              <div className="mt-3 space-y-1 text-sm text-slate-600">
-                <p className="font-semibold text-slate-900">{userName}</p>
-                <p>Legajo: {userLegajo}</p>
-                <p>Usuario: {userUsername}</p>
-              </div>
-            </div>
-          </div>
-          <SignOutButton />
-        </section>
-
         <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
           <aside>
             <div className="flex h-full flex-col justify-around rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
