@@ -10,6 +10,9 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/login",
+  },
   providers: [
     CredentialsProvider({
       name: "Credenciales institucionales",
@@ -82,6 +85,19 @@ export const authOptions: NextAuthOptions = {
         session.user.personaId = typeof token.personaId === "string" ? token.personaId : undefined;
       }
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      const loginUrl = `${baseUrl}/login`;
+
+      if (url.startsWith(loginUrl)) {
+        return loginUrl;
+      }
+
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+
+      return `${baseUrl}/dashboard`;
     },
   },
 };
