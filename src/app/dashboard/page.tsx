@@ -43,61 +43,67 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:flex md:items-center md:justify-between md:gap-6">
+      <main className="mx-auto w-full max-w-6xl space-y-10 px-6 py-10">
+        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm lg:flex lg:items-center lg:justify-between lg:gap-6">
           <div className="flex items-center gap-4">
-            <div className="hidden h-14 w-14 items-center justify-center rounded-full bg-blue-700 text-lg font-semibold text-white sm:flex">
+            <div className="hidden h-16 w-16 items-center justify-center rounded-full bg-blue-700 text-xl font-semibold text-white sm:flex">
               SG
             </div>
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
                 Secretaría General – Sistema de Gestión de Títulos
               </p>
-              <h2 className="mt-1 text-xl font-semibold text-slate-900">Bienvenido/a, {userName}</h2>
+              <h2 className="mt-1 text-2xl font-semibold text-slate-900">Panel principal del egresado</h2>
+              <div className="mt-3 space-y-1 text-sm text-slate-600">
+                <p className="font-semibold text-slate-900">{userName}</p>
+                <p>Legajo: {userLegajo}</p>
+                <p>Usuario: {userUsername}</p>
+              </div>
             </div>
           </div>
           <SignOutButton />
         </section>
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Accesos rápidos</h3>
-          <p className="mt-2 max-w-3xl text-sm text-slate-600">
-            Consulte el estado de cada solicitud, inicie nuevas gestiones y subsane observaciones desde este panel.
-          </p>
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          <aside className="space-y-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900">Menú de solicitudes</h2>
-              <p className="mt-3 text-sm text-slate-600">
-                Acceda rápidamente a las principales gestiones disponibles para la administración de sus títulos universitarios.
-              </p>
-            </div>
-            <nav className="space-y-4">
-              {menuOptions.map((option: MenuOption) => (
-                <div
-                  key={option.title}
-                  className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-600 hover:shadow"
-                >
-                  <p className="text-sm font-semibold text-slate-900">{option.title}</p>
-                  <p className="mt-2 text-sm text-slate-600">{option.description}</p>
-                  <button className="mt-3 inline-flex items-center text-sm font-semibold text-blue-700">
-                    Gestionar
-                    <span aria-hidden className="ml-2 transition group-hover:translate-x-1">→</span>
+        <div className="grid gap-10 lg:grid-cols-[280px_1fr]">
+          <aside>
+            <div className="flex h-full flex-col justify-around rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-slate-900">Sistema control de solicitudes de título</h3>
+                <p className="text-sm text-slate-600">
+                  Accedé a las opciones principales para iniciar, buscar o subsanar solicitudes de forma ágil.
+                </p>
+              </div>
+              <div className="mt-8 space-y-4">
+                {menuOptions.map((option: MenuOption) => (
+                  <button
+                    key={option.title}
+                    className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                    type="button"
+                  >
+                    <span>{option.title}</span>
+                    <span className="text-base" aria-hidden>
+                      →
+                    </span>
                   </button>
-                </div>
-              ))}
-            </nav>
+                ))}
+              </div>
+            </div>
           </aside>
 
           <section className="space-y-8">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+              <h3 className="text-xl font-semibold text-slate-900">Seleccionar título</h3>
+              <p className="mt-2 text-sm text-slate-600">
+                Elegí el trámite que necesitás gestionar para avanzar con la emisión de tu título universitario.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div>
-                  <h2 className="text-2xl font-semibold text-slate-900">Mis solicitudes de título</h2>
+                  <h2 className="text-2xl font-semibold text-slate-900">Solicitudes en curso</h2>
                   <p className="mt-2 max-w-2xl text-sm text-slate-600">
-                    Visualice el detalle de sus solicitudes, incluyendo la carrera, facultad de origen, estado del trámite y las acciones disponibles.
+                    Visualizá tus solicitudes, consultá su estado y accedé a las acciones disponibles para cada título.
                   </p>
                 </div>
                 <button className="inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200">
@@ -141,26 +147,12 @@ export default async function DashboardPage() {
                 </table>
               </div>
               <p className="mt-4 text-xs text-slate-500">
-                La información aquí presentada es de carácter orientativo. Los estados actualizados de los trámites podrán ser verificados en todo momento desde este portal.
+                Los estados se actualizan automáticamente. Ante dudas, contactá a la Secretaría General.
               </p>
             </div>
 
-            <section className="grid gap-6 lg:grid-cols-2">
-              <article className="rounded-2xl border border-blue-100 bg-blue-50 p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-blue-900">Experiencia segura y transparente</h3>
-                <p className="mt-3 text-sm text-blue-900/80">
-                  Autenticación con usuario institucional, registro para egresados y seguimiento en tiempo real de cada etapa del trámite.
-                </p>
-              </article>
-              <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-slate-900">Documentación y alertas informativas</h3>
-                <p className="mt-3 text-sm text-slate-600">
-                  Reciba notificaciones sobre subsanación de datos, control de entregas y disponibilidad de resoluciones para descargar.
-                </p>
-              </article>
-            </section>
           </section>
-        </section>
+        </div>
       </main>
 
       <footer className="border-t border-slate-200 bg-white">
