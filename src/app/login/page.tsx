@@ -62,7 +62,7 @@ export default async function LoginPage() {
             Esta sección se habilitará automáticamente una vez que inicie sesión con sus credenciales institucionales.
           </p>
           <p className="mt-6 text-sm text-blue-700">
-            ¿No posee credenciales? Seleccione la opción "Registrarse como egresado" y siga las instrucciones de la Secretaría General.
+            ¿No posee credenciales? Seleccione la opción &quot;Registrarse como egresado&quot; y siga las instrucciones de la Secretaría General.
           </p>
           <div className="mt-8 grid gap-4 text-left text-sm text-slate-600 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
