@@ -21,24 +21,24 @@ export default async function LoginPage() {
               Sistema de Gestión de Solicitudes de Titulos
             </p>
             <h1 className="text-4xl font-semibold text-slate-900 md:text-5xl">
-              Portal de la Secretaría General de la Universidad [Nombre]
+              Portal de la Secretaría General – CRUC IUA Córdoba
             </h1>
             <p className="max-w-xl text-base text-slate-600 md:text-lg">
               Acceda al portal oficial para iniciar solicitudes de títulos, realizar el seguimiento de trámites en curso y completar información pendiente con acompañamiento institucional.
             </p>
             <div className="rounded-xl border border-blue-100 bg-white/70 p-4 text-sm text-slate-600 shadow-sm backdrop-blur">
               <p className="font-semibold text-slate-900">
-                Secretaría General – Universidad [Nombre]
+                Secretaría General – CRUC IUA Córdoba
               </p>
-              <p>Atención al usuario: [correo institucional] | [Teléfono]</p>
-              <p>Horario de atención: [horario]</p>
+              <p>Atención al usuario: sgeneral@iua.edu.ar | 351-4434555</p>
+              <p>Horario de atención: lunes a viernes de 9:00 a 13:00</p>
             </div>
           </div>
 
           <div className="rounded-2xl border border-white/60 bg-white p-8 shadow-2xl shadow-blue-900/10">
             <h2 className="text-2xl font-semibold text-slate-900">Ingreso seguro</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Acceso exclusivo para estudiantes y egresados habilitados por la Secretaría General.
+              Acceso exclusivo para egresados habilitados por la Secretaría General.
             </p>
             <LoginForm />
             <div className="mt-6 space-y-2 text-center text-sm text-blue-700">
