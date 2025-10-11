@@ -1,7 +1,7 @@
 const statusStyles: Record<string, string> = {
-  "En revisión": "bg-amber-100 text-amber-700",
-  Aprobado: "bg-emerald-100 text-emerald-700",
-  Observado: "bg-red-100 text-red-700",
+  "En revisión": "bg-amber-100 text-amber-700 text-center",
+  Aprobado: "bg-emerald-100 text-emerald-700 text-center",
+  Observado: "bg-red-100 text-red-700 text-center",
 };
 
 export function StatusBadge({ status }: { status: string }) {
