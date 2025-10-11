@@ -17,9 +17,9 @@ export default async function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-blue-700/10 to-transparent" />
         <div className="relative mx-auto grid w-full max-w-6xl gap-12 px-6 py-16 lg:grid-cols-2 lg:items-center">
           <div className="space-y-6">
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-800">
-              Sistema de Gestión de Títulos Universitarios
-            </span>
+            <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
+              Sistema de Gestión de Solicitudes de Titulos
+            </p>
             <h1 className="text-4xl font-semibold text-slate-900 md:text-5xl">
               Portal de la Secretaría General de la Universidad [Nombre]
             </h1>

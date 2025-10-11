@@ -28,7 +28,7 @@ export default async function DashboardPage() {
       <header className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-blue-700/10 to-transparent" />
         <div className="relative mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
-          <Image src={logoImage} alt="Sistema control de solicitudes de título" className="h-24 w-auto" />
+          <Image src={logoImage} alt="Sistema de Gestión de Solicitudes de Titulos" className="h-24 w-auto" />
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="relative h-10 w-10 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
@@ -102,9 +102,6 @@ export default async function DashboardPage() {
                     Visualizá tus solicitudes, consultá su estado y accedé a las acciones disponibles para cada título.
                   </p>
                 </div>
-                <button className="inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-2 text-sm font-semibold text-white shadow hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-200">
-                  Seleccionar título
-                </button>
               </div>
               <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
                 <table className="min-w-full divide-y divide-slate-200">
