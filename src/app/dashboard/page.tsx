@@ -21,6 +21,10 @@ export default async function DashboardPage() {
   const firstName = session.user?.firstName ?? null;
   const lastName = session.user?.lastName ?? null;
   const displayName = [firstName, lastName].filter(Boolean).join(" ") || session.user?.username || "Usuario";
+  const initialsForAvatar = [firstName?.trim().charAt(0), lastName?.trim().charAt(0)]
+    .filter(Boolean)
+    .join("")
+    .toUpperCase() || session.user?.username?.slice(0, 2).toUpperCase() || "US";
   const userDocumentNumber = session.user?.documentNumber ?? "Documento no disponible";
   const userUsername = session.user?.username ?? "Sin usuario";
 
@@ -48,13 +52,13 @@ export default async function DashboardPage() {
                   />
                 ) : (
                   <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-slate-500">
-                    {(displayName || "US").slice(0, 2).toUpperCase()}
+                    {initialsForAvatar}
                   </span>
                 )}
               </div>
               <div className="text-center text-sm text-slate-600 sm:text-left">
                 <p className="font-semibold text-slate-900">{displayName}</p>
-                <p className="text-xs">Documento: {userDocumentNumber}</p>
+                <p className="text-xs">Legajo: {userDocumentNumber}</p>
                 <p className="text-xs">Usuario: {userUsername}</p>
               </div>
             </div>
