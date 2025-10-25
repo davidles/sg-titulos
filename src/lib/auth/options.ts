@@ -1,7 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { DEMO_USERS } from "./mocks/demoUsers";
+import { loginWithCredentials } from "./api";
 
 const NEXT_AUTH_SECRET = process.env.NEXTAUTH_SECRET ?? "development-secret";
 
@@ -25,65 +25,79 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const matchedUser = DEMO_USERS.find(
-          (user) => user.username === credentials.username.trim().toLowerCase()
-        );
+        try {
+          const { user, token } = await loginWithCredentials(
+            credentials.username,
+            credentials.password
+          );
 
-        if (!matchedUser) {
+          const displayName = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.username;
+
+          return {
+            id: String(user.id),
+            name: displayName ?? undefined,
+            username: user.username,
+            personId: user.personId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            documentNumber: user.documentNumber,
+            accessToken: token,
+          } satisfies {
+            id: string;
+            name?: string;
+            username: string | null;
+            personId: number | null;
+            firstName: string | null;
+            lastName: string | null;
+            documentNumber: string | null;
+            accessToken: string;
+          };
+        } catch (error) {
+          console.error("Error during credentials authorization", error);
           return null;
         }
-
-        if (matchedUser.accountStatus !== "ACTIVE") {
-          return null;
-        }
-
-        const isValidPassword = credentials.password === matchedUser.password;
-
-        if (!isValidPassword) {
-          return null;
-        }
-
-        return {
-          id: matchedUser.userId,
-          name: matchedUser.fullName,
-          username: matchedUser.username,
-          legajo: matchedUser.recordNumber,
-          nivelControl: matchedUser.controlLevelId,
-          personaId: matchedUser.personId,
-        } as {
-          id: string;
-          name: string;
-          username: string;
-          legajo: string;
-          nivelControl: string;
-          personaId: string;
-        };
       },
     }),
   ],
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const typedUser = user as {
-          legajo?: string;
-          username?: string;
-          nivelControl?: string;
-          personaId?: string;
+        const typedUser = user as unknown as {
+          username: string | null;
+          personId: number | null;
+          firstName: string | null;
+          lastName: string | null;
+          documentNumber: string | null;
+          accessToken: string;
         };
-        token.legajo = typedUser.legajo;
-        token.username = typedUser.username;
-        token.nivelControl = typedUser.nivelControl;
-        token.personaId = typedUser.personaId;
+
+        token.username = typedUser.username ?? undefined;
+        token.personId = typedUser.personId ?? null;
+        token.firstName = typedUser.firstName ?? null;
+        token.lastName = typedUser.lastName ?? null;
+        token.documentNumber = typedUser.documentNumber ?? null;
+        token.accessToken = typedUser.accessToken;
       }
+
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.legajo = typeof token.legajo === "string" ? token.legajo : undefined;
         session.user.username = typeof token.username === "string" ? token.username : undefined;
-        session.user.nivelControl = typeof token.nivelControl === "string" ? token.nivelControl : undefined;
-        session.user.personaId = typeof token.personaId === "string" ? token.personaId : undefined;
+        session.user.personId = typeof token.personId === "number" ? token.personId : null;
+        session.user.firstName = typeof token.firstName === "string" || token.firstName === null
+          ? (token.firstName as string | null)
+          : null;
+        session.user.lastName = typeof token.lastName === "string" || token.lastName === null
+          ? (token.lastName as string | null)
+          : null;
+        session.user.documentNumber =
+          typeof token.documentNumber === "string" || token.documentNumber === null
+            ? (token.documentNumber as string | null)
+            : null;
+        session.user.accessToken = typeof token.accessToken === "string" ? token.accessToken : undefined;
       }
+
       return session;
     },
   },

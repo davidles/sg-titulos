@@ -17,9 +17,11 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const userName = session.user?.name ?? "María González";
-  const userLegajo = session.user?.legajo ?? "001245";
-  const userUsername = session.user?.username ?? "mgonzalez";
+  const firstName = session.user?.firstName ?? null;
+  const lastName = session.user?.lastName ?? null;
+  const displayName = [firstName, lastName].filter(Boolean).join(" ") || session.user?.username || "Usuario";
+  const userDocumentNumber = session.user?.documentNumber ?? "Documento no disponible";
+  const userUsername = session.user?.username ?? "Sin usuario";
 
   const { solicitudes, menuOptions } = await fetchPortalData();
 
@@ -37,20 +39,20 @@ export default async function DashboardPage() {
                 {session.user?.image ? (
                   <Image
                     src={session.user.image}
-                    alt={userName ?? "Usuario"}
+                    alt={displayName}
                     fill
                     sizes="48px"
                     className="object-cover"
                   />
                 ) : (
                   <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-slate-500">
-                    {userName?.slice(0, 2).toUpperCase() ?? "USR"}
+                    {(displayName || "US").slice(0, 2).toUpperCase()}
                   </span>
                 )}
               </div>
               <div className="text-center text-sm text-slate-600 sm:text-left">
-                <p className="font-semibold text-slate-900">{userName}</p>
-                <p className="text-xs">Legajo: {userLegajo}</p>
+                <p className="font-semibold text-slate-900">{displayName}</p>
+                <p className="text-xs">Documento: {userDocumentNumber}</p>
                 <p className="text-xs">Usuario: {userUsername}</p>
               </div>
             </div>
