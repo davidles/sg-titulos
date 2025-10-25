@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { getPortalData } from "@/data/portal";
+import { getPortalFallbackData } from "@/data/portal";
 
 export async function GET() {
-  const data = getPortalData();
+  const data = getPortalFallbackData();
 
   return NextResponse.json(data, {
     headers: {
