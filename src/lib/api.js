@@ -56,3 +56,10 @@ async function safeParseJson(response) {
 export async function getUsers() {
   return fetchFromApi("/api/users");
 }
+
+export async function registerUser(payload) {
+  return fetchFromApi("/api/users/register", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
