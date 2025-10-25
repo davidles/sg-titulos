@@ -1,15 +1,24 @@
 import Link from "next/link";
 import { getUsers } from "@/lib/api";
+import type { ApiUser } from "@/types/user";
+
+function isApiUser(value: unknown): value is ApiUser {
+  if (typeof value !== "object" || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj.id === "number" && typeof obj.username === "string"
+  );
+}
 
 export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
-  let users: any[] = [];
+  let users: ApiUser[] = [];
   let errorMessage: string | null = null;
 
   try {
     const data = await getUsers();
-    users = Array.isArray(data) ? data : [];
+    users = Array.isArray(data) ? data.filter(isApiUser) : [];
   } catch (error) {
     errorMessage =
       error instanceof Error
