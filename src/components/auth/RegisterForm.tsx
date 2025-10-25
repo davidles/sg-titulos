@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { registerUser } from "@/lib/api";
+import { getCitiesByProvince, getCountries, getProvincesByCountry, getProvinces, registerUser } from "@/lib/api";
 
 const EMAIL_REGEX = /^[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+$/i;
 const DOCUMENT_REGEX = /^\d{6,12}$/;
@@ -30,6 +30,8 @@ const initialFormValues = {
   confirmPassword: "",
   street: "",
   streetNumber: "",
+  countryId: "",
+  provinceId: "",
   cityId: "",
   graduateType: "Civil" as "Civil" | "Militar",
   militaryRankId: ""
@@ -48,6 +50,8 @@ const trimFormValues = (values: FormState): FormState => ({
   mobilePhone: values.mobilePhone.trim(),
   street: values.street.trim(),
   streetNumber: values.streetNumber.trim(),
+  countryId: values.countryId.trim(),
+  provinceId: values.provinceId.trim(),
   cityId: values.cityId.trim(),
   militaryRankId: values.militaryRankId.trim()
 });
@@ -108,6 +112,20 @@ const validateForm = (values: FormState): FormErrors => {
     errors.streetNumber = "El número de calle debe ser un número positivo.";
   }
 
+  const countryId = Number(values.countryId);
+  if (!values.countryId) {
+    errors.countryId = "Seleccioná el país.";
+  } else if (!Number.isFinite(countryId) || countryId <= 0) {
+    errors.countryId = "El país seleccionado no es válido.";
+  }
+
+  const provinceId = Number(values.provinceId);
+  if (!values.provinceId) {
+    errors.provinceId = "Seleccioná la provincia.";
+  } else if (!Number.isFinite(provinceId) || provinceId <= 0) {
+    errors.provinceId = "La provincia seleccionada no es válida.";
+  }
+
   const cityId = Number(values.cityId);
   if (!values.cityId) {
     errors.cityId = "Seleccioná la ciudad.";
@@ -150,6 +168,29 @@ export function RegisterForm() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FormErrors>({});
+  const [countries, setCountries] = useState<Array<{ id: number; name: string }>>([]);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [provinces, setProvinces] = useState<Array<{ id: number; name: string }>>([]);
+  const [loadingProvinces, setLoadingProvinces] = useState(false);
+  const [cities, setCities] = useState<Array<{ id: number; name: string }>>([]);
+  const [citiesCache, setCitiesCache] = useState<Record<number, Array<{ id: number; name: string }>>>({});
+  const [loadingCities, setLoadingCities] = useState(false);
+  const [provincesCache, setProvincesCache] = useState<Record<number, Array<{ id: number; name: string }>>>({});
+
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoadingCountries(true);
+        const list = await getCountries();
+        console.debug('Countries fetched:', Array.isArray(list) ? list.length : 0);
+        setCountries(list);
+      } catch (_) {
+        console.error('No se pudieron cargar los países');
+      } finally {
+        setLoadingCountries(false);
+      }
+    })();
+  }, []);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -160,6 +201,15 @@ export function RegisterForm() {
 
       if (fieldName === "graduateType" && value === "Civil") {
         next.militaryRankId = "";
+      }
+
+      if (fieldName === "countryId") {
+        next.provinceId = "";
+        next.cityId = "";
+      }
+
+      if (fieldName === "provinceId") {
+        next.cityId = "";
       }
 
       return next;
@@ -173,8 +223,59 @@ export function RegisterForm() {
         delete next.militaryRankId;
       }
 
+      if (fieldName === "countryId") {
+        delete next.provinceId;
+        delete next.cityId;
+      }
+
+      if (fieldName === "provinceId") {
+        delete next.cityId;
+      }
+
       return next;
     });
+
+    if (fieldName === "countryId") {
+      const numericCountryId = Number(value);
+      setProvinces([]);
+      setCities([]);
+      if (!Number.isFinite(numericCountryId) || numericCountryId <= 0) {
+        return;
+      }
+      const cachedProv = provincesCache[numericCountryId];
+      if (cachedProv && cachedProv.length > 0) {
+        setProvinces(cachedProv);
+        return;
+      }
+      setLoadingProvinces(true);
+      getProvincesByCountry(numericCountryId)
+        .then((list) => {
+          setProvinces(list);
+          setProvincesCache((prev) => ({ ...prev, [numericCountryId]: list }));
+        })
+        .finally(() => setLoadingProvinces(false));
+    }
+
+    if (fieldName === "provinceId") {
+      const numericProvinceId = Number(value);
+      setCities([]);
+      if (!Number.isFinite(numericProvinceId) || numericProvinceId <= 0) {
+        return;
+      }
+      // Use cache if available
+      const cached = citiesCache[numericProvinceId];
+      if (cached && cached.length > 0) {
+        setCities(cached);
+        return;
+      }
+      setLoadingCities(true);
+      getCitiesByProvince(numericProvinceId)
+        .then((list) => {
+          setCities(list);
+          setCitiesCache((prev) => ({ ...prev, [numericProvinceId]: list }));
+        })
+        .finally(() => setLoadingCities(false));
+    }
   };
 
   const resetForm = () => {
@@ -261,6 +362,7 @@ export function RegisterForm() {
       setIsLoading(true);
 
       const numericStreetNumber = Number(normalizedValues.streetNumber);
+      const numericProvinceId = Number(normalizedValues.provinceId);
       const numericCityId = Number(normalizedValues.cityId);
       const numericMilitaryRankId = normalizedValues.militaryRankId
         ? Number(normalizedValues.militaryRankId)
@@ -288,7 +390,8 @@ export function RegisterForm() {
         address: {
           street: normalizedValues.street,
           streetNumber: numericStreetNumber,
-          cityId: numericCityId
+          cityId: numericCityId,
+          provinceId: numericProvinceId
         },
         graduate: {
           graduateType: normalizedValues.graduateType,
@@ -326,6 +429,15 @@ export function RegisterForm() {
       disabled
         ? "bg-slate-300 text-slate-500 hover:bg-slate-300 focus:ring-slate-200"
         : "bg-blue-700 text-white hover:bg-blue-800 focus:ring-blue-200"
+    }`;
+
+  const getSelectClasses = (hasError?: boolean, disabled?: boolean) =>
+    `rounded-lg px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 ${
+      disabled
+        ? "border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed"
+        : hasError
+          ? "border-red-300 bg-white text-slate-700 focus:border-red-500 focus:ring-red-100"
+          : "border-slate-200 bg-white text-slate-700 focus:border-blue-600 focus:ring-blue-100"
     }`;
 
   const normalizedValuesForValidation = useMemo(() => trimFormValues(formValues), [formValues]);
@@ -536,26 +648,91 @@ export function RegisterForm() {
             ) : null}
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="cityId">
-              Ciudad (ID)
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="countryId">
+              País
             </label>
-            <input
+            <select
+              id="countryId"
+              name="countryId"
+              className={getSelectClasses(Boolean(fieldErrors.countryId), false)}
+              value={formValues.countryId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              aria-invalid={Boolean(fieldErrors.countryId)}
+              aria-describedby={fieldErrors.countryId ? "countryId-error" : undefined}
+            >
+              <option value="">{loadingCountries ? "Cargando países..." : (countries.length === 0 ? "No hay países disponibles" : "Seleccioná un país")}</option>
+              {countries.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            {fieldErrors.countryId ? (
+              <p className="text-xs text-red-600" id="countryId-error">
+                {fieldErrors.countryId}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="provinceId">
+              Provincia
+            </label>
+            <select
+              id="provinceId"
+              name="provinceId"
+              className={getSelectClasses(Boolean(fieldErrors.provinceId), !formValues.countryId || loadingProvinces)}
+              value={formValues.provinceId}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              required
+              disabled={!formValues.countryId || loadingProvinces}
+              aria-disabled={!formValues.countryId || loadingProvinces}
+              aria-invalid={Boolean(fieldErrors.provinceId)}
+              aria-describedby={fieldErrors.provinceId ? "provinceId-error" : undefined}
+            >
+              <option value="">{
+                !formValues.countryId
+                  ? "Elegí primero un país"
+                  : loadingProvinces
+                    ? "Cargando provincias..."
+                    : (provinces.length === 0 ? "No hay provincias disponibles" : "Seleccioná una provincia")
+              }</option>
+              {provinces.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            {fieldErrors.provinceId ? (
+              <p className="text-xs text-red-600" id="provinceId-error">
+                {fieldErrors.provinceId}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="cityId">
+              Ciudad
+            </label>
+            <select
               id="cityId"
               name="cityId"
-              type="number"
-              min="1"
-              placeholder="Ingrese el identificador"
-              className={getInputClasses(Boolean(fieldErrors.cityId))}
+              className={getSelectClasses(Boolean(fieldErrors.cityId), !formValues.provinceId || loadingCities)}
               value={formValues.cityId}
               onChange={handleChange}
               onBlur={handleBlur}
               required
+              disabled={!formValues.provinceId || loadingCities}
+              aria-disabled={!formValues.provinceId || loadingCities}
               aria-invalid={Boolean(fieldErrors.cityId)}
               aria-describedby={fieldErrors.cityId ? "cityId-error" : undefined}
-            />
-            <p className="text-xs text-slate-500">
-              Este valor es temporal hasta habilitar el catálogo de ciudades.
-            </p>
+            >
+              <option value="">
+                {!formValues.provinceId ? "Elegí primero una provincia" : (loadingCities ? "Cargando ciudades..." : "Seleccioná una ciudad")}
+              </option>
+              {cities.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
             {fieldErrors.cityId ? (
               <p className="text-xs text-red-600" id="cityId-error">
                 {fieldErrors.cityId}

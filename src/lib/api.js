@@ -63,3 +63,24 @@ export async function registerUser(payload) {
     body: JSON.stringify(payload)
   });
 }
+
+export async function getProvinces() {
+  const res = await fetchFromApi("/api/locations/provinces");
+  return Array.isArray(res?.provinces) ? res.provinces : [];
+}
+
+export async function getCitiesByProvince(provinceId) {
+  const res = await fetchFromApi(`/api/locations/provinces/${provinceId}/cities`);
+  return Array.isArray(res?.cities) ? res.cities : [];
+}
+
+export async function getCountries() {
+  const res = await fetchFromApi("/api/locations/countries");
+  return Array.isArray(res?.countries) ? res.countries : [];
+}
+
+export async function getProvincesByCountry(countryId) {
+  const res = await fetchFromApi(`/api/locations/countries/${countryId}/provinces`);
+  // Backend route currently exposes provinces by country under /provinces? If not present, fallback to all and filter on client
+  return Array.isArray(res?.provinces) ? res.provinces : [];
+}
