@@ -1,12 +1,19 @@
-export interface MenuOption {
-  title: string;
-  description: string;
+export interface DashboardMenuOption {
+  id: number;
+  name: string | null;
+  description: string | null;
 }
 
-export interface Solicitud {
-  titulo: string;
-  carrera: string;
-  facultad: string;
-  estado: string;
-  accion: string;
+export interface DashboardRequestSummary {
+  idRequest: number;
+  requestTypeName: string | null;
+  generatedAt: string | null;
+  statusName: string | null;
+  statusDescription: string | null;
+  nextAction: string;
+}
+
+export interface DashboardData {
+  menuOptions: DashboardMenuOption[];
+  requests: DashboardRequestSummary[];
 }

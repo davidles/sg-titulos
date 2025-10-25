@@ -1,44 +1,31 @@
-import { getPortalData } from "@/data/portal";
-import type { MenuOption, Solicitud } from "@/types/portal";
+import { getPortalFallbackData } from "@/data/portal";
+import type { DashboardData } from "@/types/portal";
+import type { Session } from "next-auth";
+import { fetchFromApi } from "@/lib/api";
 
 type PortalData = {
-  solicitudes: Solicitud[];
-  menuOptions: MenuOption[];
+  menuOptions: DashboardData["menuOptions"];
+  requests: DashboardData["requests"];
 };
 
-function getBaseUrl() {
-  if (process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
-  }
-
-  if (process.env.NEXT_PUBLIC_APP_URL) {
-    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return "http://localhost:3000";
-}
-
-export async function fetchPortalData(): Promise<PortalData> {
+export async function fetchPortalData(session: Session): Promise<PortalData> {
   try {
-    const response = await fetch(`${getBaseUrl()}/api/portal`, {
-      cache: "no-store",
-      next: { revalidate: 0 },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch portal data: ${response.status}`);
+    if (!session?.user?.id || !session.user.accessToken) {
+      throw new Error("Sesión no encontrada o token no disponible");
     }
 
-    const data = (await response.json()) as PortalData;
-    return data;
+    const dashboardData = await fetchFromApi(`/api/dashboard?userId=${session.user.id}`, {
+      headers: {
+        Authorization: `Bearer ${session.user.accessToken}`,
+      },
+      cache: "no-store",
+    });
+
+    return dashboardData as DashboardData;
   } catch (error) {
     if (process.env.NODE_ENV === "development") {
       console.warn("Falling back to local portal data", error);
     }
-    return getPortalData();
+    return getPortalFallbackData();
   }
 }

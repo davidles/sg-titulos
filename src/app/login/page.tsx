@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -45,9 +46,9 @@ export default async function LoginPage() {
               <a className="block hover:underline" href="#">
                 ¿Olvidó su contraseña?
               </a>
-              <a className="block hover:underline" href="#">
+              <Link className="block hover:underline" href="/auth/register">
                 Registrarse como egresado
-              </a>
+              </Link>
             </div>
           </div>
         </div>
