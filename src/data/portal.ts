@@ -1,6 +1,6 @@
 import type { DashboardData } from "@/types/portal";
 
-const fallbackData: DashboardData = {
+export const fallbackDashboardData: DashboardData = {
   menuOptions: [
     {
       id: 1,
@@ -40,6 +40,6 @@ const fallbackData: DashboardData = {
   ],
 };
 
-export function getPortalData(): DashboardData {
-  return fallbackData;
+export function getPortalFallbackData(): DashboardData {
+  return fallbackDashboardData;
 }

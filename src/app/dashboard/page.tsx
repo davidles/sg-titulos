@@ -4,11 +4,12 @@ import { getServerSession } from "next-auth";
 
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { authOptions } from "@/lib/auth/options";
-import type { MenuOption, Solicitud } from "@/types/portal";
+import type { DashboardRequestSummary } from "@/types/portal";
 
 import { StatusBadge } from "@/app/dashboard/status-badge";
 import { fetchPortalData } from "@/app/dashboard/portal-data";
 import logoImage from "@/app/logo.png";
+import { fallbackDashboardData } from "@/data/portal";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -23,10 +24,11 @@ export default async function DashboardPage() {
   const userDocumentNumber = session.user?.documentNumber ?? "Documento no disponible";
   const userUsername = session.user?.username ?? "Sin usuario";
 
-  const { solicitudes, menuOptions } = await fetchPortalData();
+  const { requests } = await fetchPortalData(session);
+  const actionButtons = fallbackDashboardData.menuOptions;
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-100 flex flex-col">
       <header className="relative overflow-hidden border-b border-slate-200 bg-white">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-blue-700/10 to-transparent" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-8 md:px-6">
@@ -63,7 +65,7 @@ export default async function DashboardPage() {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
+      <main className="mx-auto w-full max-w-6xl flex-1 space-y-8 px-4 py-8 sm:px-6 sm:py-10">
         <div className="grid gap-8 lg:grid-cols-[minmax(0,280px)_1fr]">
           <aside>
             <div className="flex h-full flex-col gap-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
@@ -74,13 +76,13 @@ export default async function DashboardPage() {
                 </p>
               </div>
               <div className="space-y-3">
-                {menuOptions.map((option: MenuOption) => (
+                {actionButtons.map((option) => (
                   <button
-                    key={option.title}
+                    key={option.id}
                     className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-600 hover:bg-blue-50 hover:text-blue-700 sm:px-5 sm:py-4"
                     type="button"
                   >
-                    <span>{option.title}</span>
+                    <span>{option.name ?? "Opción disponible"}</span>
                     <span className="text-base" aria-hidden>
                       →
                     </span>
@@ -114,32 +116,35 @@ export default async function DashboardPage() {
                       <thead className="bg-slate-50">
                         <tr>
                           <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            Título
+                            Solicitud
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            Carrera
-                          </th>
-                          <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            Facultad
+                            Fecha
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                             Estado
                           </th>
                           <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            Acción
+                            Próximo paso
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white">
-                        {solicitudes.map((solicitud: Solicitud) => (
-                          <tr key={solicitud.titulo}>
-                            <td className="px-6 py-4 text-sm font-semibold text-slate-900">{solicitud.titulo}</td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{solicitud.carrera}</td>
-                            <td className="px-6 py-4 text-sm text-slate-600">{solicitud.facultad}</td>
-                            <td className="px-6 py-4 text-sm">
-                              <StatusBadge status={solicitud.estado} />
+                        {requests.map((request: DashboardRequestSummary) => (
+                          <tr key={request.idRequest}>
+                            <td className="px-6 py-4 text-sm font-semibold text-slate-900">{request.requestTypeName ?? `Solicitud #${request.idRequest}`}</td>
+                            <td className="px-6 py-4 text-sm text-slate-600">
+                              {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
                             </td>
-                            <td className="px-6 py-4 text-sm font-semibold text-blue-700">{solicitud.accion}</td>
+                            <td className="px-6 py-4 text-sm">
+                              <div className="space-y-1">
+                                <StatusBadge status={request.statusName ?? "Sin estado"} />
+                                {request.statusDescription ? (
+                                  <p className="text-xs text-slate-500">{request.statusDescription}</p>
+                                ) : null}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-sm font-semibold text-blue-700">{request.nextAction}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -148,16 +153,22 @@ export default async function DashboardPage() {
                 </div>
 
                 <div className="space-y-4 lg:hidden">
-                  {solicitudes.map((solicitud: Solicitud) => (
-                    <article key={solicitud.titulo} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  {requests.map((request: DashboardRequestSummary) => (
+                    <article key={request.idRequest} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
                       <header className="flex flex-col gap-1">
-                        <p className="text-sm font-semibold text-slate-900">{solicitud.titulo}</p>
-                        <p className="text-xs text-slate-500">{solicitud.carrera}</p>
-                        <p className="text-xs text-slate-500">{solicitud.facultad}</p>
+                        <p className="text-sm font-semibold text-slate-900">{request.requestTypeName ?? `Solicitud #${request.idRequest}`}</p>
+                        <p className="text-xs text-slate-500">
+                          Fecha: {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
+                        </p>
                       </header>
                       <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <StatusBadge status={solicitud.estado} />
-                        <span className="text-sm font-semibold text-blue-700">{solicitud.accion}</span>
+                        <div className="flex flex-col gap-1">
+                          <StatusBadge status={request.statusName ?? "Sin estado"} />
+                          {request.statusDescription ? (
+                            <span className="text-xs text-slate-500">{request.statusDescription}</span>
+                          ) : null}
+                        </div>
+                        <span className="text-sm font-semibold text-blue-700">{request.nextAction}</span>
                       </div>
                     </article>
                   ))}

@@ -62,7 +62,8 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const typedUser = user as unknown as {
+        const typedUser = user as {
+          id: string;
           username: string | null;
           personId: number | null;
           firstName: string | null;
@@ -71,6 +72,7 @@ export const authOptions: NextAuthOptions = {
           accessToken: string;
         };
 
+        token.id = typedUser.id ?? token.id;
         token.username = typedUser.username ?? undefined;
         token.personId = typedUser.personId ?? null;
         token.firstName = typedUser.firstName ?? null;
@@ -83,6 +85,7 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
+        session.user.id = typeof token.id === "string" ? token.id : undefined;
         session.user.username = typeof token.username === "string" ? token.username : undefined;
         session.user.personId = typeof token.personId === "number" ? token.personId : null;
         session.user.firstName = typeof token.firstName === "string" || token.firstName === null
