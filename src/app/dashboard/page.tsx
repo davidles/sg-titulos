@@ -57,7 +57,7 @@ export default async function DashboardPage() {
                 )}
               </div>
               <div className="text-center text-sm text-slate-600 sm:text-left">
-                <p className="font-semibold text-slate-900">{displayName}</p>
+                <p className="font-semibold text-slate-900 capitalize">{displayName}</p>
                 <p className="text-xs">Legajo: {userDocumentNumber}</p>
                 <p className="text-xs">Usuario: {userUsername}</p>
               </div>

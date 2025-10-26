@@ -26,7 +26,7 @@ export default async function RegisterPage() {
             <div className="rounded-xl border border-blue-100 bg-white/70 p-5 text-sm text-slate-600 shadow-sm backdrop-blur">
               <p className="font-semibold text-slate-900">¿Ya tenés usuario?</p>
               <p>
-                Ingresá desde la pantalla de <Link className="font-semibold text-blue-700 hover:underline" href="/login">inicio de sesión</Link>.
+                Ingresá desde la pantalla de <Link className="font-semibold text-blue-700 hover:text-blue-800 underline-offset-2 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-sm" href="/login">inicio de sesión</Link>.
               </p>
             </div>
             <section className="space-y-4">
