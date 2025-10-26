@@ -84,3 +84,8 @@ export async function getProvincesByCountry(countryId) {
   // Backend route currently exposes provinces by country under /provinces? If not present, fallback to all and filter on client
   return Array.isArray(res?.provinces) ? res.provinces : [];
 }
+
+export async function getMilitaryRanks() {
+  const res = await fetchFromApi(`/api/military/ranks`);
+  return Array.isArray(res?.ranks) ? res.ranks : [];
+}
