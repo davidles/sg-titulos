@@ -89,3 +89,21 @@ export async function getMilitaryRanks() {
   const res = await fetchFromApi(`/api/military/ranks`);
   return Array.isArray(res?.ranks) ? res.ranks : [];
 }
+
+export async function requestPasswordReset(identifier) {
+  const body = { email: String(identifier ?? '').trim() };
+  return fetchFromApi(`/api/auth/password/forgot`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}
+
+export async function resetPassword(token, password) {
+  const body = { token: String(token ?? ''), password: String(password ?? '') };
+  return fetchFromApi(`/api/auth/password/reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+}

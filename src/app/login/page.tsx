@@ -43,9 +43,9 @@ export default async function LoginPage() {
             </p>
             <LoginForm />
             <div className="mt-6 space-y-2 text-center text-sm text-blue-700">
-              <a className="block hover:underline" href="#">
+              <Link className="block hover:underline" href="/auth/forgot-password">
                 ¿Olvidó su contraseña?
-              </a>
+              </Link>
               <Link className="block hover:underline" href="/auth/register">
                 Registrarse como egresado
               </Link>
