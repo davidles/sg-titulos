@@ -42,11 +42,8 @@ export default async function LoginPage() {
               Acceso exclusivo para egresados habilitados por la Secretaría General.
             </p>
             <LoginForm />
-            <div className="mt-6 space-y-2 text-center text-sm text-blue-700">
-              <Link className="block hover:underline" href="/auth/forgot-password">
-                ¿Olvidó su contraseña?
-              </Link>
-              <Link className="block hover:underline" href="/auth/register">
+            <div className="mt-6 text-center text-sm text-blue-700">
+              <Link className="hover:underline" href="/auth/register">
                 Registrarse como egresado
               </Link>
             </div>
