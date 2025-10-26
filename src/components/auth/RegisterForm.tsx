@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { getCitiesByProvince, getCountries, getProvincesByCountry, getProvinces, registerUser } from "@/lib/api";
+import { getCitiesByProvince, getCountries, getProvincesByCountry, getProvinces, getMilitaryRanks, registerUser } from "@/lib/api";
 
 const EMAIL_REGEX = /^[\w.!#$%&'*+/=?^`{|}~-]+@[\w-]+(?:\.[\w-]+)+$/i;
 const DOCUMENT_REGEX = /^\d{6,12}$/;
@@ -176,6 +176,8 @@ export function RegisterForm() {
   const [citiesCache, setCitiesCache] = useState<Record<number, Array<{ id: number; name: string }>>>({});
   const [loadingCities, setLoadingCities] = useState(false);
   const [provincesCache, setProvincesCache] = useState<Record<number, Array<{ id: number; name: string }>>>({});
+  const [ranks, setRanks] = useState<Array<{ id: number; name: string }>>([]);
+  const [loadingRanks, setLoadingRanks] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -191,6 +193,22 @@ export function RegisterForm() {
       }
     })();
   }, []);
+
+  useEffect(() => {
+    if (formValues.graduateType !== "Militar") return;
+    if (ranks.length > 0) return;
+    (async () => {
+      try {
+        setLoadingRanks(true);
+        const list = await getMilitaryRanks();
+        setRanks(list);
+      } catch (_) {
+        // ignore, validation covers required selection
+      } finally {
+        setLoadingRanks(false);
+      }
+    })();
+  }, [formValues.graduateType, ranks.length]);
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
@@ -775,25 +793,26 @@ export function RegisterForm() {
           {formValues.graduateType === "Militar" ? (
             <div className="flex flex-col gap-2">
               <label className="text-xs font-semibold uppercase tracking-wide text-slate-500" htmlFor="militaryRankId">
-                Grado militar (ID)
+                Grado militar
               </label>
-              <input
+              <select
                 id="militaryRankId"
                 name="militaryRankId"
-                type="number"
-                min="1"
-                placeholder="Identificador del grado"
-                className={getInputClasses(Boolean(fieldErrors.militaryRankId))}
+                className={getSelectClasses(Boolean(fieldErrors.militaryRankId), loadingRanks)}
                 value={formValues.militaryRankId}
                 onChange={handleChange}
                 onBlur={handleBlur}
                 required
+                disabled={loadingRanks}
+                aria-disabled={loadingRanks}
                 aria-invalid={Boolean(fieldErrors.militaryRankId)}
                 aria-describedby={fieldErrors.militaryRankId ? "militaryRankId-error" : undefined}
-              />
-              <p className="text-xs text-slate-500">
-                Ingresá el identificador correspondiente. Próximamente se mostrará el listado.
-              </p>
+              >
+                <option value="">{loadingRanks ? "Cargando grados..." : (ranks.length === 0 ? "No hay grados disponibles" : "Seleccioná un grado")}</option>
+                {ranks.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
               {fieldErrors.militaryRankId ? (
                 <p className="text-xs text-red-600" id="militaryRankId-error">
                   {fieldErrors.militaryRankId}
