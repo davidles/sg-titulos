@@ -107,3 +107,61 @@ export async function resetPassword(token, password) {
     body: JSON.stringify(body),
   });
 }
+
+export async function getAvailableTitles(userId, options = {}) {
+  const res = await fetchFromApi(`/api/titles/available?userId=${userId}`, options);
+  return Array.isArray(res?.data) ? res.data : [];
+}
+
+export async function createRequest(payload, options = {}) {
+  return fetchFromApi(`/api/requests`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    ...options,
+    headers: {
+      ...(options.headers ?? {})
+    }
+  });
+}
+
+export async function getRequestRequirements(requestId, options = {}) {
+  const res = await fetchFromApi(`/api/requests/${requestId}/requirements`, options);
+  return Array.isArray(res?.data) ? res.data : [];
+}
+
+export async function uploadRequirementFile({ requestId, requirementInstanceId, formData, headers }) {
+  const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/file`;
+  const response = await fetch(`${getApiBaseUrl()}${url}`, {
+    method: "POST",
+    body: formData,
+    headers
+  });
+
+  if (!response.ok) {
+    const errorBody = await safeParseJson(response);
+    const error = new Error(errorBody?.message ?? `Request failed with status ${response.status}`);
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  const data = await safeParseJson(response);
+  return data?.data ?? null;
+}
+
+export async function getRequestFormData(userId, options = {}) {
+  const res = await fetchFromApi(`/api/forms/${userId}`, options);
+  return res?.data ?? null;
+}
+
+export async function updateRequestFormData(userId, payload, options = {}) {
+  const res = await fetchFromApi(`/api/forms/${userId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+    ...options,
+    headers: {
+      ...(options.headers ?? {})
+    }
+  });
+  return res?.data ?? null;
+}
