@@ -134,9 +134,20 @@ export default async function DashboardPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white">
-                        {requests.map((request: DashboardRequestSummary) => (
-                          <tr key={request.idRequest}>
-                            <td className="px-6 py-4 text-sm font-semibold text-slate-900">{request.requestTypeName ?? `Solicitud #${request.idRequest}`}</td>
+                        {requests.map((request: DashboardRequestSummary) => {
+                          const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
+                          const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
+                          const facultyLabel = request.facultyName ?? 'Facultad no disponible';
+                          const planLabel = request.planName ?? 'Plan no disponible';
+
+                          return (
+                            <tr key={request.idRequest}>
+                              <td className="px-6 py-4 text-sm font-semibold text-slate-900">
+                                <p>{requestLabel}</p>
+                                <p className="text-xs font-normal text-slate-500">{academicProgramLabel}</p>
+                                <p className="text-xs font-normal text-slate-500">{facultyLabel}</p>
+                                <p className="text-xs font-normal text-slate-500">{planLabel}</p>
+                              </td>
                             <td className="px-6 py-4 text-sm text-slate-600">
                               {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
                             </td>
@@ -149,33 +160,45 @@ export default async function DashboardPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4 text-sm font-semibold text-blue-700">{request.nextAction}</td>
-                          </tr>
-                        ))}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                 </div>
 
                 <div className="space-y-4 lg:hidden">
-                  {requests.map((request: DashboardRequestSummary) => (
-                    <article key={request.idRequest} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <header className="flex flex-col gap-1">
-                        <p className="text-sm font-semibold text-slate-900">{request.requestTypeName ?? `Solicitud #${request.idRequest}`}</p>
-                        <p className="text-xs text-slate-500">
-                          Fecha: {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
-                        </p>
-                      </header>
-                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-col gap-1">
-                          <StatusBadge status={request.statusName ?? "Sin estado"} />
-                          {request.statusDescription ? (
-                            <span className="text-xs text-slate-500">{request.statusDescription}</span>
-                          ) : null}
+                  {requests.map((request: DashboardRequestSummary) => {
+                    const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
+                    const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
+                    const facultyLabel = request.facultyName ?? 'Facultad no disponible';
+                    const planLabel = request.planName ?? 'Plan no disponible';
+
+                    return (
+                      <article key={request.idRequest} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                        <header className="flex flex-col gap-1">
+                          <p className="text-sm font-semibold text-slate-900">{requestLabel}</p>
+                          <p className="text-xs text-slate-500">
+                            {academicProgramLabel} · {facultyLabel}
+                          </p>
+                          <p className="text-xs text-slate-500">Plan: {planLabel}</p>
+                          <p className="text-xs text-slate-500">
+                            Fecha: {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
+                          </p>
+                        </header>
+                        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-col gap-1">
+                            <StatusBadge status={request.statusName ?? "Sin estado"} />
+                            {request.statusDescription ? (
+                              <span className="text-xs text-slate-500">{request.statusDescription}</span>
+                            ) : null}
+                          </div>
+                          <span className="text-sm font-semibold text-blue-700">{request.nextAction}</span>
                         </div>
-                        <span className="text-sm font-semibold text-blue-700">{request.nextAction}</span>
-                      </div>
-                    </article>
-                  ))}
+                      </article>
+                    );
+                  })}
                 </div>
               </div>
               <p className="mt-4 text-xs text-slate-500">

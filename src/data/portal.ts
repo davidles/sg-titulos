@@ -28,6 +28,10 @@ export const fallbackDashboardData: DashboardData = {
       statusName: "En revisión",
       statusDescription: "La solicitud se encuentra en evaluación por la Secretaría.",
       nextAction: "Ver detalle",
+      requestTypeId: 1,
+      academicProgramName: "Licenciatura en Psicología",
+      facultyName: "Facultad de Psicología",
+      planName: "Plan 2020",
     },
     {
       idRequest: 2,
@@ -36,6 +40,10 @@ export const fallbackDashboardData: DashboardData = {
       statusName: "Aprobado",
       statusDescription: "La solicitud fue aprobada y se generó la documentación.",
       nextAction: "Descargar constancia",
+      requestTypeId: 2,
+      academicProgramName: "Profesorado en Matemática",
+      facultyName: "Facultad de Ciencias Exactas",
+      planName: "Plan 2018",
     },
   ],
 };

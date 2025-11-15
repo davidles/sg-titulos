@@ -11,6 +11,10 @@ export interface DashboardRequestSummary {
   statusName: string | null;
   statusDescription: string | null;
   nextAction: string;
+  requestTypeId: number | null;
+  academicProgramName: string | null;
+  facultyName: string | null;
+  planName: string | null;
 }
 
 export interface DashboardData {
