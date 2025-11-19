@@ -107,7 +107,7 @@ export async function getAvailableTitles(userId, options = {}) {
 }
 
 export async function createRequest(payload, options = {}) {
-  return fetchFromApi(`/api/requests`, {
+  const res = await fetchFromApi(`/api/requests`, {
     method: "POST",
     body: JSON.stringify(payload),
     ...options,
@@ -115,6 +115,8 @@ export async function createRequest(payload, options = {}) {
       ...(options.headers ?? {})
     }
   });
+
+  return res?.data ?? null;
 }
 
 export async function getRequestRequirements(requestId, options = {}) {

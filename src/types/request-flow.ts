@@ -6,12 +6,25 @@ export interface AvailableTitle {
   facultyName: string | null;
   statusName: string | null;
   requestTypeId: number | null;
+  requestTypeName: string | null;
 }
 
 export interface RequestCreationResponse {
   idRequest: number;
   generatedAt: string | null;
   currentStatus: string | null;
+  requestType: {
+    idRequestType: number | null;
+    requestTypeName: string | null;
+  };
+  title: {
+    idTitle: number;
+    titleName: string | null;
+  };
+  requirements: Array<{
+    requirementId: number;
+    isRequired: boolean;
+  }>;
 }
 
 export interface RequestFormDataPerson {

@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
@@ -81,16 +82,16 @@ export default async function DashboardPage() {
               </div>
               <div className="space-y-3">
                 {actionButtons.map((option) => (
-                  <button
+                  <Link
                     key={option.id}
+                    href={option.id === 1 ? "/requests/new" : "#"}
                     className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 transition hover:border-blue-600 hover:bg-blue-50 hover:text-blue-700 sm:px-5 sm:py-4"
-                    type="button"
                   >
                     <span>{option.name ?? "Opción disponible"}</span>
                     <span className="text-base" aria-hidden>
                       →
                     </span>
-                  </button>
+                  </Link>
                 ))}
               </div>
             </div>
