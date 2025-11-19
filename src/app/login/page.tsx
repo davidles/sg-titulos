@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
@@ -40,16 +39,9 @@ export default async function LoginPage() {
             <h2 className="text-2xl font-semibold text-slate-900">Ingreso seguro</h2>
             <p className="mt-2 text-sm text-slate-600">
               Acceso exclusivo para egresados habilitados por la Secretaría General.
+              Si necesitás una cuenta, comunicate con el equipo administrativo.
             </p>
             <LoginForm />
-            <div className="mt-6 space-y-2 text-center text-sm text-blue-700">
-              <Link className="block hover:underline" href="/auth/forgot-password">
-                ¿Olvidó su contraseña?
-              </Link>
-              <Link className="block hover:underline" href="/auth/register">
-                Registrarse como egresado
-              </Link>
-            </div>
           </div>
         </div>
       </header>
@@ -63,14 +55,12 @@ export default async function LoginPage() {
             Esta sección se habilitará automáticamente una vez que inicie sesión con sus credenciales institucionales.
           </p>
           <p className="mt-6 text-sm text-blue-700">
-            ¿No posee credenciales? Seleccione la opción &quot;Registrarse como egresado&quot; y siga las instrucciones de la Secretaría General.
+            ¿No posee credenciales? Contacte a la Secretaría General para solicitar el alta correspondiente.
           </p>
           <div className="mt-8 grid gap-4 text-left text-sm text-slate-600 sm:grid-cols-3">
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-              <p className="font-semibold text-slate-900">1. Registro</p>
-              <p className="mt-1 text-xs">
-                Complete su formulario de alta de egresado y adjunte la documentación solicitada.
-              </p>
+              <p className="font-semibold text-slate-900">1. Alta institucional</p>
+              <p className="mt-1 text-xs">Solicite sus credenciales al área administrativa de la Secretaría General.</p>
             </div>
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
               <p className="font-semibold text-slate-900">2. Verificación</p>
