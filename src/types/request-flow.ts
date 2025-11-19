@@ -140,6 +140,19 @@ export interface RequirementInstanceAttributes {
   requirementFilePath: string | null;
 }
 
+export interface RequestRequirementItem {
+  requirementInstance: RequirementInstanceAttributes;
+  requirement: {
+    idRequirement: number;
+    requirementName: string | null;
+    requirementDescription: string | null;
+  } | null;
+  status: {
+    idRequirementInstanceStatus: number;
+    requirementInstanceStatusName: string | null;
+  } | null;
+}
+
 export interface RequirementAttributes {
   idRequirement: number;
   requirementName: string | null;

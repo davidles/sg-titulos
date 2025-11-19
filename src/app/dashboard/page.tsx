@@ -160,7 +160,16 @@ export default async function DashboardPage() {
                                 ) : null}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-sm font-semibold text-blue-700">{request.nextAction}</td>
+                            <td className="px-6 py-4 text-sm font-semibold text-blue-700">
+                              {request.nextAction ? (
+                                <Link
+                                  href={`/requests/${request.idRequest}/requirements`}
+                                  className="hover:underline"
+                                >
+                                  {request.nextAction}
+                                </Link>
+                              ) : null}
+                            </td>
                             </tr>
                           );
                         })}
@@ -195,7 +204,14 @@ export default async function DashboardPage() {
                               <span className="text-xs text-slate-500">{request.statusDescription}</span>
                             ) : null}
                           </div>
-                          <span className="text-sm font-semibold text-blue-700">{request.nextAction}</span>
+                          {request.nextAction ? (
+                            <Link
+                              href={`/requests/${request.idRequest}/requirements`}
+                              className="text-sm font-semibold text-blue-700 hover:underline"
+                            >
+                              {request.nextAction}
+                            </Link>
+                          ) : null}
                         </div>
                       </article>
                     );
