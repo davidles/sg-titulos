@@ -136,6 +136,8 @@ export default async function DashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white">
                         {requests.map((request: DashboardRequestSummary) => {
+                          const shouldShowPersonalFormLink =
+                            request.statusName?.toLowerCase().includes("pend") ?? false;
                           const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
                           const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                           const facultyLabel = request.facultyName ?? 'Facultad no disponible';
@@ -160,15 +162,25 @@ export default async function DashboardPage() {
                                 ) : null}
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-sm font-semibold text-blue-700">
-                              {request.nextAction ? (
-                                <Link
-                                  href={`/requests/${request.idRequest}/requirements`}
-                                  className="hover:underline"
-                                >
-                                  {request.nextAction}
-                                </Link>
-                              ) : null}
+                            <td className="px-6 py-4 text-sm text-blue-700">
+                              <div className="flex flex-col gap-2">
+                                {shouldShowPersonalFormLink ? (
+                                  <Link
+                                    href="/requests/form"
+                                    className="inline-flex items-center justify-center rounded-2xl border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                                  >
+                                    Continuar formulario
+                                  </Link>
+                                ) : null}
+                                {request.nextAction ? (
+                                  <Link
+                                    href={`/requests/${request.idRequest}/requirements`}
+                                    className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                                  >
+                                    {request.nextAction}
+                                  </Link>
+                                ) : null}
+                              </div>
                             </td>
                             </tr>
                           );
@@ -180,6 +192,8 @@ export default async function DashboardPage() {
 
                 <div className="space-y-4 lg:hidden">
                   {requests.map((request: DashboardRequestSummary) => {
+                    const shouldShowPersonalFormLink =
+                      request.statusName?.toLowerCase().includes("pend") ?? false;
                     const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
                     const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                     const facultyLabel = request.facultyName ?? 'Facultad no disponible';
@@ -204,14 +218,24 @@ export default async function DashboardPage() {
                               <span className="text-xs text-slate-500">{request.statusDescription}</span>
                             ) : null}
                           </div>
-                          {request.nextAction ? (
-                            <Link
-                              href={`/requests/${request.idRequest}/requirements`}
-                              className="text-sm font-semibold text-blue-700 hover:underline"
-                            >
-                              {request.nextAction}
-                            </Link>
-                          ) : null}
+                          <div className="flex flex-col gap-2">
+                            {shouldShowPersonalFormLink ? (
+                              <Link
+                                href="/requests/form"
+                                className="rounded-2xl border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-700 text-center transition hover:bg-blue-50"
+                              >
+                                Continuar formulario
+                              </Link>
+                            ) : null}
+                            {request.nextAction ? (
+                              <Link
+                                href={`/requests/${request.idRequest}/requirements`}
+                                className="rounded-2xl bg-blue-700 px-3 py-2 text-sm font-semibold text-white text-center transition hover:bg-blue-800"
+                              >
+                                {request.nextAction}
+                              </Link>
+                            ) : null}
+                          </div>
                         </div>
                       </article>
                     );

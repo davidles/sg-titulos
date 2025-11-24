@@ -11,8 +11,12 @@ import type {
   UpdateRequestFormPayload,
   ForceAttributes,
   MilitaryRankAttributes,
+  CountryAttributes,
+  ProvinceAttributes,
+  CityAttributes,
+  RequestFormDataCatalogs,
 } from "@/types/request-flow";
-import { updateRequestFormData } from "@/lib/api";
+import { updateRequestFormData, generateFormPdf } from "@/lib/api";
 
 import PersonalDataStep from "./steps/personal-data-step";
 import ContactDataStep from "./steps/contact-data-step";
@@ -79,12 +83,16 @@ export default function RequestFormWizard({
   accessToken,
   fetchError,
 }: RequestFormWizardProps) {
+  const [catalogs, setCatalogs] = useState<RequestFormDataCatalogs | null>(
+    initialData?.catalogs ?? null,
+  );
   const [wizardState, setWizardState] = useState<WizardState>({
     currentStepIndex: 0,
     saving: false,
     errorMessage: fetchError,
     successMessage: null,
   });
+  const [pdfState, setPdfState] = useState({ downloading: false });
 
   const [person, setPerson] = useState<RequestFormDataPerson>(
     () => (initialData?.person ? { ...initialData.person } : createDefaultPerson())
@@ -100,13 +108,28 @@ export default function RequestFormWizard({
   );
 
   const forces = useMemo<ForceAttributes[]>(
-    () => (initialData?.catalogs?.forces ? [...initialData.catalogs.forces] : []),
-    [initialData?.catalogs?.forces]
+    () => (catalogs?.forces ? [...catalogs.forces] : []),
+    [catalogs?.forces],
   );
 
   const ranks = useMemo<MilitaryRankAttributes[]>(
-    () => (initialData?.catalogs?.militaryRanks ? [...initialData.catalogs.militaryRanks] : []),
-    [initialData?.catalogs?.militaryRanks]
+    () => (catalogs?.militaryRanks ? [...catalogs.militaryRanks] : []),
+    [catalogs?.militaryRanks],
+  );
+
+  const countries = useMemo<CountryAttributes[]>(
+    () => (catalogs?.countries ? [...catalogs.countries] : []),
+    [catalogs?.countries],
+  );
+
+  const provinces = useMemo<ProvinceAttributes[]>(
+    () => (catalogs?.provinces ? [...catalogs.provinces] : []),
+    [catalogs?.provinces],
+  );
+
+  const cities = useMemo<CityAttributes[]>(
+    () => (catalogs?.cities ? [...catalogs.cities] : []),
+    [catalogs?.cities],
   );
 
   const currentStep = steps[wizardState.currentStepIndex];
@@ -114,11 +137,27 @@ export default function RequestFormWizard({
   const currentComponent = useMemo(() => {
     switch (currentStep.id) {
       case "personal":
-        return <PersonalDataStep person={person} onChange={setPerson} />;
+        return (
+          <PersonalDataStep
+            person={person}
+            onChange={setPerson}
+            countries={countries}
+            provinces={provinces}
+            cities={cities}
+          />
+        );
       case "contact":
         return <ContactDataStep contact={contact} onChange={setContact} />;
       case "address":
-        return <AddressDataStep address={address} onChange={setAddress} />;
+        return (
+          <AddressDataStep
+            address={address}
+            onChange={setAddress}
+            countries={countries}
+            provinces={provinces}
+            cities={cities}
+          />
+        );
       case "graduate":
         return (
           <GraduateDataStep
@@ -131,7 +170,18 @@ export default function RequestFormWizard({
       default:
         return null;
     }
-  }, [currentStep.id, person, contact, address, graduate, forces, ranks]);
+  }, [
+    currentStep.id,
+    person,
+    contact,
+    address,
+    graduate,
+    forces,
+    ranks,
+    countries,
+    provinces,
+    cities,
+  ]);
 
   const goToStep = (index: number) => {
     setWizardState((prev) => ({
@@ -236,6 +286,62 @@ export default function RequestFormWizard({
         setContact(updatedData.contact ? { ...updatedData.contact } : createDefaultContact());
         setAddress(updatedData.address ? { ...updatedData.address } : createDefaultAddress());
         setGraduate(updatedData.graduate ? { ...updatedData.graduate } : createDefaultGraduate());
+        setCatalogs(updatedData.catalogs ?? null);
+      }
+
+      return true;
+    } catch (error) {
+      const fallbackMessage =
+        error instanceof Error ? error.message : "No pudimos guardar los datos. Intentá nuevamente.";
+
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      setWizardState((prev) => ({
+        ...prev,
+        saving: false,
+        errorMessage: apiMessage ?? fallbackMessage,
+      }));
+
+      return false;
+    }
+  };
+
+  const persistDraft = async () => {
+    setWizardState((prev) => ({
+      ...prev,
+      saving: true,
+      errorMessage: null,
+      successMessage: null,
+    }));
+
+    try {
+      const payload: UpdateRequestFormPayload = {
+        person: {
+          ...person,
+        },
+        contact: contact,
+        address: address,
+        graduate: graduate,
+      };
+
+      const updatedData = await updateRequestFormData(userId, payload, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      setWizardState((prev) => ({
+        ...prev,
+        saving: false,
+        successMessage: "Datos guardados correctamente.",
+      }));
+
+      if (updatedData) {
+        setPerson(updatedData.person ? { ...updatedData.person } : createDefaultPerson());
+        setContact(updatedData.contact ? { ...updatedData.contact } : createDefaultContact());
+        setAddress(updatedData.address ? { ...updatedData.address } : createDefaultAddress());
+        setGraduate(updatedData.graduate ? { ...updatedData.graduate } : createDefaultGraduate());
+        setCatalogs(updatedData.catalogs ?? null);
       }
 
       return true;
@@ -257,19 +363,67 @@ export default function RequestFormWizard({
 
   const isLastStep = wizardState.currentStepIndex === steps.length - 1;
 
-  const handleNext = async () => {
-    const success = await handleSaveStep();
-    if (success) {
+  const triggerPdfDownload = async () => {
+    setPdfState({ downloading: true });
+
+    try {
+      const pdfBlob = await generateFormPdf(userId, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const downloadUrl = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `formulario-${userId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
       setWizardState((prev) => ({
         ...prev,
-        currentStepIndex: Math.min(prev.currentStepIndex + 1, steps.length - 1),
+        successMessage: "Guardamos tus datos y generamos el PDF.",
+        errorMessage: null,
       }));
+    } catch (error) {
+      const fallbackMessage =
+        error instanceof Error ? error.message : "No pudimos generar el PDF. Intentá nuevamente.";
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      setWizardState((prev) => ({
+        ...prev,
+        errorMessage: apiMessage ?? fallbackMessage,
+      }));
+    } finally {
+      setPdfState({ downloading: false });
     }
+  };
+
+  const handleNext = async () => {
+    const success = await handleSaveStep();
+
+    if (!success) {
+      return;
+    }
+
+    if (isLastStep) {
+      await triggerPdfDownload();
+      return;
+    }
+
+    setWizardState((prev) => ({
+      ...prev,
+      currentStepIndex: Math.min(prev.currentStepIndex + 1, steps.length - 1),
+    }));
   };
 
   const handlePrevious = () => {
     goToStep(Math.max(wizardState.currentStepIndex - 1, 0));
   };
+
+  const handleSubmit = () => persistDraft();
 
   return (
     <div className="space-y-6">
@@ -327,19 +481,23 @@ export default function RequestFormWizard({
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={handleSaveStep}
-            disabled={wizardState.saving}
-            className="rounded-2xl border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
+            onClick={handleSubmit}
+            disabled={wizardState.saving || pdfState.downloading}
+            className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            Guardar
+            {wizardState.saving ? "Guardando..." : pdfState.downloading ? "Procesando..." : "Guardar cambios"}
           </button>
           <button
             type="button"
             onClick={handleNext}
-            disabled={wizardState.saving}
+            disabled={wizardState.saving || pdfState.downloading}
             className="rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            {isLastStep ? "Finalizar" : "Siguiente"}
+            {isLastStep
+              ? wizardState.saving || pdfState.downloading
+                ? "Finalizando..."
+                : "Finalizar y generar PDF"
+              : "Siguiente"}
           </button>
         </div>
       </footer>
