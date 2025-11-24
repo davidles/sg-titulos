@@ -433,7 +433,7 @@ export default function RequestFormWizard({
             type="button"
             onClick={handleNext}
             disabled={wizardState.saving || pdfState.downloading || wizardState.completed}
-            className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600 disabled:cursor-not-allowed disabled:from-blue-300 disabled:to-blue-300"
           >
             {wizardState.saving
               ? "Guardando..."

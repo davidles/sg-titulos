@@ -176,7 +176,7 @@ export default async function DashboardPage() {
                                 {request.nextAction ? (
                                   <Link
                                     href={`/requests/${request.idRequest}/requirements`}
-                                    className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
+                                    className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
                                   >
                                     {request.nextAction}
                                   </Link>
@@ -232,7 +232,7 @@ export default async function DashboardPage() {
                             {request.nextAction ? (
                               <Link
                                 href={`/requests/${request.idRequest}/requirements`}
-                                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
+                                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
                               >
                                 {request.nextAction}
                               </Link>
