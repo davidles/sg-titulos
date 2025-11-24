@@ -119,6 +119,28 @@ export async function createRequest(payload, options = {}) {
   return res?.data ?? null;
 }
 
+export async function generateFormPdf(userId, options = {}) {
+  const url = `/api/forms/${userId}/pdf`;
+
+  const response = await fetch(`${getApiBaseUrl()}${url}`, {
+    method: "POST",
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    const errorBody = await safeParseJson(response);
+    const error = new Error(errorBody?.message ?? `Request failed with status ${response.status}`);
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  return await response.blob();
+}
+
 export async function getRequestRequirements(requestId, options = {}) {
   const res = await fetchFromApi(`/api/requests/${requestId}/requirements`, options);
   return Array.isArray(res?.data) ? res.data : [];

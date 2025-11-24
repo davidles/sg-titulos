@@ -91,6 +91,9 @@ export interface CountryAttributes {
 export interface RequestFormDataCatalogs {
   forces: ForceAttributes[];
   militaryRanks: MilitaryRankAttributes[];
+  countries: CountryAttributes[];
+  provinces: ProvinceAttributes[];
+  cities: CityAttributes[];
 }
 
 export interface RequestFormData {
