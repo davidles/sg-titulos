@@ -152,37 +152,37 @@ export default async function DashboardPage() {
                                 <p className="text-xs font-normal text-slate-500">{facultyLabel}</p>
                                 <p className="text-xs font-normal text-slate-500">{planLabel}</p>
                               </td>
-                            <td className="px-6 py-4 text-sm text-slate-600">
-                              {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
-                            </td>
-                            <td className="px-6 py-4 text-sm">
-                              <div className="space-y-1">
-                                <StatusBadge status={request.statusName ?? "Sin estado"} />
-                                {request.statusDescription ? (
-                                  <p className="text-xs text-slate-500">{request.statusDescription}</p>
-                                ) : null}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-blue-700">
-                              <div className="flex flex-col gap-2">
-                                {shouldShowPersonalFormLink ? (
-                                  <Link
-                                    href="/requests/form"
-                                    className="inline-flex items-center justify-center rounded-2xl border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
-                                  >
-                                    Continuar formulario
-                                  </Link>
-                                ) : null}
-                                {request.nextAction ? (
-                                  <Link
-                                    href={`/requests/${request.idRequest}/requirements`}
-                                    className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
-                                  >
-                                    {request.nextAction}
-                                  </Link>
-                                ) : null}
-                              </div>
-                            </td>
+                              <td className="px-6 py-4 text-sm text-slate-600">
+                                {request.generatedAt ? new Date(request.generatedAt).toLocaleDateString() : "Sin fecha"}
+                              </td>
+                              <td className="px-6 py-4 text-sm">
+                                <div className="space-y-1">
+                                  <StatusBadge status={request.statusName ?? "Sin estado"} />
+                                  {request.statusDescription ? (
+                                    <p className="text-xs text-slate-500">{request.statusDescription}</p>
+                                  ) : null}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 text-sm text-blue-700">
+                                <div className="flex flex-col gap-2">
+                                  {shouldShowPersonalFormLink ? (
+                                    <Link
+                                      href="/requests/form"
+                                      className="inline-flex items-center justify-center rounded-2xl border border-blue-600 px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                                    >
+                                      Continuar formulario
+                                    </Link>
+                                  ) : null}
+                                  {request.nextAction ? (
+                                    <Link
+                                      href={`/requests/${request.idRequest}/requirements`}
+                                      className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
+                                    >
+                                      {request.nextAction}
+                                    </Link>
+                                  ) : null}
+                                </div>
+                              </td>
                             </tr>
                           );
                         })}
