@@ -136,8 +136,9 @@ export default async function DashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-slate-100 bg-white">
                         {requests.map((request: DashboardRequestSummary) => {
-                          const shouldShowPersonalFormLink =
-                            request.statusName?.toLowerCase().includes("pend") ?? false;
+                          const statusName = request.statusName?.toLowerCase() ?? "";
+                          const nextAction = request.nextAction?.toLowerCase() ?? "";
+                          const shouldShowPersonalFormLink = statusName.includes("pend") && !nextAction.includes("requisit");
                           const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
                           const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                           const facultyLabel = request.facultyName ?? 'Facultad no disponible';
@@ -175,7 +176,7 @@ export default async function DashboardPage() {
                                 {request.nextAction ? (
                                   <Link
                                     href={`/requests/${request.idRequest}/requirements`}
-                                    className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-3 py-2 text-sm font-semibold text-white transition hover:bg-blue-800"
+                                    className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
                                   >
                                     {request.nextAction}
                                   </Link>
@@ -192,8 +193,9 @@ export default async function DashboardPage() {
 
                 <div className="space-y-4 lg:hidden">
                   {requests.map((request: DashboardRequestSummary) => {
-                    const shouldShowPersonalFormLink =
-                      request.statusName?.toLowerCase().includes("pend") ?? false;
+                    const statusName = request.statusName?.toLowerCase() ?? "";
+                    const nextAction = request.nextAction?.toLowerCase() ?? "";
+                    const shouldShowPersonalFormLink = statusName.includes("pend") && !nextAction.includes("requisit");
                     const requestLabel = request.requestTypeName ?? `Solicitud #${request.idRequest}`;
                     const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                     const facultyLabel = request.facultyName ?? 'Facultad no disponible';
@@ -230,7 +232,7 @@ export default async function DashboardPage() {
                             {request.nextAction ? (
                               <Link
                                 href={`/requests/${request.idRequest}/requirements`}
-                                className="rounded-2xl bg-blue-700 px-3 py-2 text-sm font-semibold text-white text-center transition hover:bg-blue-800"
+                                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
                               >
                                 {request.nextAction}
                               </Link>

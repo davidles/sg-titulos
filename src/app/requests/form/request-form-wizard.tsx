@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import type {
@@ -75,6 +76,7 @@ type WizardState = {
   saving: boolean;
   errorMessage: string | null;
   successMessage: string | null;
+  completed: boolean;
 };
 
 export default function RequestFormWizard({
@@ -91,6 +93,7 @@ export default function RequestFormWizard({
     saving: false,
     errorMessage: fetchError,
     successMessage: null,
+    completed: false,
   });
   const [pdfState, setPdfState] = useState({ downloading: false });
 
@@ -279,6 +282,7 @@ export default function RequestFormWizard({
         ...prev,
         saving: false,
         successMessage: "Datos guardados correctamente.",
+        completed: prev.completed,
       }));
 
       if (updatedData) {
@@ -300,61 +304,7 @@ export default function RequestFormWizard({
         ...prev,
         saving: false,
         errorMessage: apiMessage ?? fallbackMessage,
-      }));
-
-      return false;
-    }
-  };
-
-  const persistDraft = async () => {
-    setWizardState((prev) => ({
-      ...prev,
-      saving: true,
-      errorMessage: null,
-      successMessage: null,
-    }));
-
-    try {
-      const payload: UpdateRequestFormPayload = {
-        person: {
-          ...person,
-        },
-        contact: contact,
-        address: address,
-        graduate: graduate,
-      };
-
-      const updatedData = await updateRequestFormData(userId, payload, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      setWizardState((prev) => ({
-        ...prev,
-        saving: false,
-        successMessage: "Datos guardados correctamente.",
-      }));
-
-      if (updatedData) {
-        setPerson(updatedData.person ? { ...updatedData.person } : createDefaultPerson());
-        setContact(updatedData.contact ? { ...updatedData.contact } : createDefaultContact());
-        setAddress(updatedData.address ? { ...updatedData.address } : createDefaultAddress());
-        setGraduate(updatedData.graduate ? { ...updatedData.graduate } : createDefaultGraduate());
-        setCatalogs(updatedData.catalogs ?? null);
-      }
-
-      return true;
-    } catch (error) {
-      const fallbackMessage =
-        error instanceof Error ? error.message : "No pudimos guardar los datos. Intentá nuevamente.";
-
-      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
-
-      setWizardState((prev) => ({
-        ...prev,
-        saving: false,
-        errorMessage: apiMessage ?? fallbackMessage,
+        completed: prev.completed,
       }));
 
       return false;
@@ -386,6 +336,7 @@ export default function RequestFormWizard({
         ...prev,
         successMessage: "Guardamos tus datos y generamos el PDF.",
         errorMessage: null,
+        completed: true,
       }));
     } catch (error) {
       const fallbackMessage =
@@ -395,6 +346,7 @@ export default function RequestFormWizard({
       setWizardState((prev) => ({
         ...prev,
         errorMessage: apiMessage ?? fallbackMessage,
+        completed: prev.completed,
       }));
     } finally {
       setPdfState({ downloading: false });
@@ -422,8 +374,6 @@ export default function RequestFormWizard({
   const handlePrevious = () => {
     goToStep(Math.max(wizardState.currentStepIndex - 1, 0));
   };
-
-  const handleSubmit = () => persistDraft();
 
   return (
     <div className="space-y-6">
@@ -478,27 +428,30 @@ export default function RequestFormWizard({
         >
           Volver
         </button>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={wizardState.saving || pdfState.downloading}
-            className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
-          >
-            {wizardState.saving ? "Guardando..." : pdfState.downloading ? "Procesando..." : "Guardar cambios"}
-          </button>
+        <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={handleNext}
-            disabled={wizardState.saving || pdfState.downloading}
-            className="rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
+            disabled={wizardState.saving || pdfState.downloading || wizardState.completed}
+            className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
           >
-            {isLastStep
-              ? wizardState.saving || pdfState.downloading
-                ? "Finalizando..."
-                : "Finalizar y generar PDF"
+            {wizardState.saving
+              ? "Guardando..."
+              : pdfState.downloading
+              ? "Procesando..."
+              : isLastStep
+              ? "Finalizar y generar PDF"
               : "Siguiente"}
           </button>
+
+          {wizardState.completed ? (
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-900"
+            >
+              Volver al panel
+            </Link>
+          ) : null}
         </div>
       </footer>
     </div>
