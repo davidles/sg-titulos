@@ -15,6 +15,8 @@ export interface DashboardRequestSummary {
   academicProgramName: string | null;
   facultyName: string | null;
   planName: string | null;
+  totalRequirements: number | null;
+  completedRequirements: number | null;
 }
 
 export interface DashboardData {

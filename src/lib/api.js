@@ -166,6 +166,43 @@ export async function uploadRequirementFile({ requestId, requirementInstanceId, 
   return data?.data ?? null;
 }
 
+export async function downloadRequirementFile({ requestId, requirementInstanceId, headers }) {
+  const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/file`;
+  const response = await fetch(`${getApiBaseUrl()}${url}`, {
+    method: "GET",
+    headers
+  });
+
+  if (!response.ok) {
+    const errorBody = await safeParseJson(response);
+    const error = new Error(errorBody?.message ?? `Request failed with status ${response.status}`);
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  const blob = await response.blob();
+  const disposition = response.headers.get("content-disposition") ?? "";
+
+  let fileName = null;
+
+  const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match && utf8Match[1]) {
+    try {
+      fileName = decodeURIComponent(utf8Match[1]);
+    } catch (error) {
+      fileName = utf8Match[1];
+    }
+  } else {
+    const asciiMatch = disposition.match(/filename="?([^";]+)"?/i);
+    if (asciiMatch && asciiMatch[1]) {
+      fileName = asciiMatch[1];
+    }
+  }
+
+  return { blob, fileName };
+}
+
 export async function getRequestFormData(userId, options = {}) {
   const res = await fetchFromApi(`/api/forms/${userId}`, options);
   return res?.data ?? null;

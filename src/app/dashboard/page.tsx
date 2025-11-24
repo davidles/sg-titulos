@@ -143,6 +143,12 @@ export default async function DashboardPage() {
                           const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                           const facultyLabel = request.facultyName ?? 'Facultad no disponible';
                           const planLabel = request.planName ?? 'Plan no disponible';
+                          const totalRequirements = request.totalRequirements ?? 0;
+                          const completedRequirements = request.completedRequirements ?? 0;
+                          const hasRequirementsData = totalRequirements > 0 || completedRequirements > 0;
+                          const completionPercentage = totalRequirements > 0
+                            ? Math.min((completedRequirements / totalRequirements) * 100, 100)
+                            : 0;
 
                           return (
                             <tr key={request.idRequest}>
@@ -161,6 +167,21 @@ export default async function DashboardPage() {
                                   {request.statusDescription ? (
                                     <p className="text-xs text-slate-500">{request.statusDescription}</p>
                                   ) : null}
+                                  {hasRequirementsData ? (
+                                    <div className="flex flex-col gap-1">
+                                      <p className="text-xs text-slate-500">
+                                        Requisitos: {completedRequirements}/{totalRequirements}
+                                      </p>
+                                      {totalRequirements > 0 ? (
+                                        <div className="h-1.5 w-32 rounded-full bg-slate-200">
+                                          <div
+                                            className="h-1.5 rounded-full bg-blue-600 transition-all"
+                                            style={{ width: `${completionPercentage}%` }}
+                                          />
+                                        </div>
+                                      ) : null}
+                                    </div>
+                                  ) : null}
                                 </div>
                               </td>
                               <td className="px-6 py-4 text-sm text-blue-700">
@@ -176,7 +197,7 @@ export default async function DashboardPage() {
                                   {request.nextAction ? (
                                     <Link
                                       href={`/requests/${request.idRequest}/requirements`}
-                                      className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
+                                      className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
                                     >
                                       {request.nextAction}
                                     </Link>
@@ -200,6 +221,12 @@ export default async function DashboardPage() {
                     const academicProgramLabel = request.academicProgramName ?? 'Programa no disponible';
                     const facultyLabel = request.facultyName ?? 'Facultad no disponible';
                     const planLabel = request.planName ?? 'Plan no disponible';
+                    const totalRequirements = request.totalRequirements ?? 0;
+                    const completedRequirements = request.completedRequirements ?? 0;
+                    const hasRequirementsData = totalRequirements > 0 || completedRequirements > 0;
+                    const completionPercentage = totalRequirements > 0
+                      ? Math.min((completedRequirements / totalRequirements) * 100, 100)
+                      : 0;
 
                     return (
                       <article key={request.idRequest} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -219,6 +246,21 @@ export default async function DashboardPage() {
                             {request.statusDescription ? (
                               <span className="text-xs text-slate-500">{request.statusDescription}</span>
                             ) : null}
+                            {hasRequirementsData ? (
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs text-slate-500">
+                                  Requisitos: {completedRequirements}/{totalRequirements}
+                                </span>
+                                {totalRequirements > 0 ? (
+                                  <div className="h-1.5 w-full rounded-full bg-slate-200">
+                                    <div
+                                      className="h-1.5 rounded-full bg-blue-600 transition-all"
+                                      style={{ width: `${completionPercentage}%` }}
+                                    />
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : null}
                           </div>
                           <div className="flex flex-col gap-2">
                             {shouldShowPersonalFormLink ? (
@@ -232,7 +274,7 @@ export default async function DashboardPage() {
                             {request.nextAction ? (
                               <Link
                                 href={`/requests/${request.idRequest}/requirements`}
-                                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:text-white hover:from-blue-700 hover:to-blue-600"
+                                className="inline-flex items-center justify-center rounded-2xl bg-gradient-to-r px-3 py-2 text-sm font-semibold shadow-sm transition hover:tex-white hover:blue-600"
                               >
                                 {request.nextAction}
                               </Link>

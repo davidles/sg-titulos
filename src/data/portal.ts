@@ -32,6 +32,8 @@ export const fallbackDashboardData: DashboardData = {
       academicProgramName: "Licenciatura en Psicología",
       facultyName: "Facultad de Psicología",
       planName: "Plan 2020",
+      totalRequirements: 3,
+      completedRequirements: 2,
     },
     {
       idRequest: 2,
@@ -44,6 +46,8 @@ export const fallbackDashboardData: DashboardData = {
       academicProgramName: "Profesorado en Matemática",
       facultyName: "Facultad de Ciencias Exactas",
       planName: "Plan 2018",
+      totalRequirements: 4,
+      completedRequirements: 4,
     },
   ],
 };

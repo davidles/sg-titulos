@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { uploadRequirementFile } from "@/lib/api";
+import { downloadRequirementFile, uploadRequirementFile } from "@/lib/api";
 import type { RequestRequirementItem } from "@/types/request-flow";
 
 type RequestRequirementsClientProps = {
@@ -17,6 +17,7 @@ const COMPLETED_STATUS_ID = 2;
 
 type LocalRequirementState = RequestRequirementItem & {
   uploading: boolean;
+  downloading: boolean;
   errorMessage: string | null;
   successMessage: string | null;
 };
@@ -33,6 +34,7 @@ export default function RequestRequirementsClient({
       items.map((item) => ({
         ...item,
         uploading: false,
+        downloading: false,
         errorMessage: null,
         successMessage: null,
       })),
@@ -51,7 +53,12 @@ export default function RequestRequirementsClient({
     setRequirements((prev) =>
       prev.map((item) =>
         item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
-          ? { ...item, uploading: true, errorMessage: null, successMessage: null }
+          ? {
+              ...item,
+              uploading: true,
+              errorMessage: null,
+              successMessage: null
+            }
           : item,
       ),
     );
@@ -82,6 +89,7 @@ export default function RequestRequirementsClient({
                 ...item,
                 ...updatedItem,
                 uploading: false,
+                downloading: false,
                 errorMessage: null,
                 successMessage: "Archivo cargado correctamente.",
               }
@@ -110,6 +118,59 @@ export default function RequestRequirementsClient({
     }
   };
 
+  const handleDownload = async (requirementInstanceId: number) => {
+    setRequirements((prev) =>
+      prev.map((item) =>
+        item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+          ? { ...item, downloading: true, errorMessage: null }
+          : item,
+      ),
+    );
+
+    try {
+      const { blob, fileName } = await downloadRequirementFile({
+        requestId,
+        requirementInstanceId,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = fileName ?? `requisito-${requirementInstanceId}.bin`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+
+      setRequirements((prev) =>
+        prev.map((item) =>
+          item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+            ? { ...item, downloading: false }
+            : item,
+        ),
+      );
+    } catch (error) {
+      const fallbackMessage =
+        error instanceof Error ? error.message : "No pudimos descargar el archivo. Intentá nuevamente.";
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      setRequirements((prev) =>
+        prev.map((item) =>
+          item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+            ? {
+                ...item,
+                downloading: false,
+                errorMessage: apiMessage ?? fallbackMessage,
+              }
+            : item,
+        ),
+      );
+    }
+  };
+
   if (fetchError) {
     return (
       <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">{fetchError}</div>
@@ -131,7 +192,15 @@ export default function RequestRequirementsClient({
   return (
     <div className="space-y-4">
       {requirements.map((item) => {
-        const { requirementInstance, requirement, status, uploading, errorMessage, successMessage } = item;
+        const {
+          requirementInstance,
+          requirement,
+          status,
+          uploading,
+          downloading,
+          errorMessage,
+          successMessage
+        } = item;
         const hasFile = Boolean(requirementInstance.requirementFilePath);
 
         return (
@@ -155,7 +224,7 @@ export default function RequestRequirementsClient({
               </div>
             </header>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-xs text-slate-600">
                 {hasFile ? (
                   <p>
@@ -171,15 +240,30 @@ export default function RequestRequirementsClient({
                 ) : null}
               </div>
 
-              <label className="relative inline-flex cursor-pointer items-center justify-center rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300">
-                <span>{uploading ? "Subiendo archivo..." : hasFile ? "Reemplazar archivo" : "Subir archivo"}</span>
-                <input
-                  type="file"
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  onChange={(event) => handleFileChange(requirementInstance.idRequestRequirementInstance, event)}
-                  disabled={uploading}
-                />
-              </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                {hasFile ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDownload(requirementInstance.idRequestRequirementInstance)}
+                    disabled={uploading || downloading}
+                    className="inline-flex items-center justify-center rounded-2xl border border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:border-blue-700 hover:text-blue-800 disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-slate-400"
+                  >
+                    {downloading ? "Descargando..." : "Descargar archivo"}
+                  </button>
+                ) : null}
+
+                <label className="relative inline-flex cursor-pointer items-center justify-center rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300">
+                  <span>
+                    {uploading ? "Subiendo archivo..." : hasFile ? "Reemplazar archivo" : "Subir archivo"}
+                  </span>
+                  <input
+                    type="file"
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                    onChange={(event) => handleFileChange(requirementInstance.idRequestRequirementInstance, event)}
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
             </div>
           </article>
         );
