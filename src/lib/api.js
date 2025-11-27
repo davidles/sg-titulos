@@ -48,7 +48,7 @@ export async function fetchFromApi(path, options = {}) {
 async function safeParseJson(response) {
   try {
     return await response.json();
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -146,6 +146,11 @@ export async function getRequestRequirements(requestId, options = {}) {
   return Array.isArray(res?.data) ? res.data : [];
 }
 
+export async function getRequestEvaluation(requestId, options = {}) {
+  const res = await fetchFromApi(`/api/requests/${requestId}/evaluation`, options);
+  return res?.data ?? null;
+}
+
 export async function uploadRequirementFile({ requestId, requirementInstanceId, formData, headers }) {
   const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/file`;
   const response = await fetch(`${getApiBaseUrl()}${url}`, {
@@ -190,7 +195,7 @@ export async function downloadRequirementFile({ requestId, requirementInstanceId
   if (utf8Match && utf8Match[1]) {
     try {
       fileName = decodeURIComponent(utf8Match[1]);
-    } catch (error) {
+    } catch (_error) {
       fileName = utf8Match[1];
     }
   } else {

@@ -3,7 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth/options";
-import { getRequestRequirements } from "@/lib/api";
+import { getRequestRequirements, getRequestEvaluation } from "@/lib/api";
 import type { RequestRequirementItem } from "@/types/request-flow";
 
 import RequestRequirementsClient from "./request-requirements-client";
@@ -38,9 +38,25 @@ export default async function RequestRequirementsPage({ params }: RequestRequire
 
   let items: RequestRequirementItem[] = [];
   let fetchError: string | null = null;
+  let evaluation: {
+    requestId: number;
+    requestStatusId: number | null;
+    requestStatusName: string | null;
+    totalGraduateRequirements: number;
+    completedGraduateRequirements: number;
+    acceptedGraduateRequirements: number;
+    hasRejectedGraduateRequirements: boolean;
+  } | null = null;
 
   try {
     items = await getRequestRequirements(parsedRequestId, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      cache: "no-store",
+    });
+
+    evaluation = await getRequestEvaluation(parsedRequestId, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -63,6 +79,13 @@ export default async function RequestRequirementsPage({ params }: RequestRequire
             Revisá el listado de requisitos asociados a esta solicitud y cargá los archivos necesarios. Podés
             reemplazar un archivo si necesitás actualizarlo.
           </p>
+          {evaluation ? (
+            <p className="text-sm text-slate-700">
+              Estado de requisitos del egresado: {evaluation.completedGraduateRequirements}/
+              {evaluation.totalGraduateRequirements} completos, {evaluation.acceptedGraduateRequirements} aceptados
+              {evaluation.hasRejectedGraduateRequirements ? " y con observaciones pendientes" : ""}.
+            </p>
+          ) : null}
         </header>
 
         <RequestRequirementsClient
