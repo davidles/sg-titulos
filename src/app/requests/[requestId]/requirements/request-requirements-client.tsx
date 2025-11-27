@@ -301,6 +301,8 @@ export default function RequestRequirementsClient({
           successMessage
         } = item;
         const hasFile = Boolean(requirementInstance.requirementFilePath);
+        const isAccepted = status?.idRequirementInstanceStatus === ACCEPTED_STATUS_ID;
+        const isRejected = status?.idRequirementInstanceStatus === REJECTED_STATUS_ID;
 
         return (
           <article
@@ -370,7 +372,7 @@ export default function RequestRequirementsClient({
               </div>
             </div>
 
-            {isFacultyReviewer && hasFile ? (
+            {isFacultyReviewer && hasFile && item.responsibility !== "ADMINISTRATIVE" ? (
               <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <label className="text-xs font-semibold text-slate-700" htmlFor={`review-${requirementInstance.idRequestRequirementInstance}`}>
                   Observaciones (opcional)
@@ -406,25 +408,27 @@ export default function RequestRequirementsClient({
                         item.reviewComment,
                       )
                     }
-                    disabled={item.reviewing}
+                    disabled={item.reviewing || isAccepted}
                     className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
                   >
-                    {item.reviewing ? "Guardando..." : "Marcar como aceptado"}
+                    {item.reviewing ? "Guardando..." : isAccepted ? "Aceptado" : "Marcar como aceptado"}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleReview(
-                        requirementInstance.idRequestRequirementInstance,
-                        REJECTED_STATUS_ID,
-                        item.reviewComment,
-                      )
-                    }
-                    disabled={item.reviewing}
-                    className="inline-flex items-center justify-center rounded-2xl border border-red-600 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-700 hover:text-red-800 disabled:cursor-not-allowed disabled:border-red-300 disabled:text-red-300"
-                  >
-                    {item.reviewing ? "Guardando..." : "Marcar como rechazado"}
-                  </button>
+                  {!isAccepted && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        handleReview(
+                          requirementInstance.idRequestRequirementInstance,
+                          REJECTED_STATUS_ID,
+                          item.reviewComment,
+                        )
+                      }
+                      disabled={item.reviewing || isRejected}
+                      className="inline-flex items-center justify-center rounded-2xl border border-red-600 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-700 hover:text-red-800 disabled:cursor-not-allowed disabled:border-red-300 disabled:text-red-300"
+                    >
+                      {item.reviewing ? "Guardando..." : isRejected ? "Rechazado" : "Marcar como rechazado"}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : null}
