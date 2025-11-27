@@ -14,7 +14,14 @@ export async function fetchPortalData(session: Session): Promise<PortalData> {
       throw new Error("Sesión no encontrada o token no disponible");
     }
 
-    const dashboardData = await fetchFromApi(`/api/dashboard?userId=${session.user.id}`, {
+    const query = new URLSearchParams();
+    query.set("userId", String(session.user.id));
+
+    if (typeof session.user.roleId === "number") {
+      query.set("roleId", String(session.user.roleId));
+    }
+
+    const dashboardData = await fetchFromApi(`/api/dashboard?${query.toString()}`, {
       headers: {
         Authorization: `Bearer ${session.user.accessToken}`,
       },

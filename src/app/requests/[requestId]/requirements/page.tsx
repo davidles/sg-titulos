@@ -71,6 +71,7 @@ export default async function RequestRequirementsPage({ params }: RequestRequire
           userId={userId}
           accessToken={accessToken}
           fetchError={fetchError}
+          roleId={session.user?.roleId}
         />
 
         <div className="mt-8 flex justify-end">

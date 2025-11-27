@@ -143,6 +143,12 @@ export interface RequirementInstanceAttributes {
   requirementFilePath: string | null;
 }
 
+export interface RequirementReviewPayload {
+  nextStatusId: number;
+  reviewReason: string | null;
+  reviewerUserId: number;
+}
+
 export interface RequestRequirementItem {
   requirementInstance: RequirementInstanceAttributes;
   requirement: {
@@ -154,6 +160,7 @@ export interface RequestRequirementItem {
     idRequirementInstanceStatus: number;
     requirementInstanceStatusName: string | null;
   } | null;
+  responsibility?: 'GRADUATE' | 'ADMINISTRATIVE';
 }
 
 export interface RequirementAttributes {
@@ -165,10 +172,4 @@ export interface RequirementAttributes {
 export interface RequirementStatusAttributes {
   idRequirementInstanceStatus: number;
   requirementInstanceStatusName: string | null;
-}
-
-export interface RequestRequirementItem {
-  requirementInstance: RequirementInstanceAttributes;
-  requirement: RequirementAttributes | null;
-  status: RequirementStatusAttributes | null;
 }

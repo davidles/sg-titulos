@@ -203,6 +203,29 @@ export async function downloadRequirementFile({ requestId, requirementInstanceId
   return { blob, fileName };
 }
 
+export async function reviewRequirement({ requestId, requirementInstanceId, payload, headers }) {
+  const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/review`;
+  const response = await fetch(`${getApiBaseUrl()}${url}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...headers
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const errorBody = await safeParseJson(response);
+    const error = new Error(errorBody?.message ?? `Request failed with status ${response.status}`);
+    error.status = response.status;
+    error.body = errorBody;
+    throw error;
+  }
+
+  const data = await safeParseJson(response);
+  return data?.data ?? null;
+}
+
 export async function getRequestFormData(userId, options = {}) {
   const res = await fetchFromApi(`/api/forms/${userId}`, options);
   return res?.data ?? null;
