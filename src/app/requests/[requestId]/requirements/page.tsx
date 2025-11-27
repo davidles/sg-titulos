@@ -38,7 +38,15 @@ export default async function RequestRequirementsPage({ params }: RequestRequire
 
   let items: RequestRequirementItem[] = [];
   let fetchError: string | null = null;
-  let evaluation: any = null;
+  let evaluation: {
+    requestId: number;
+    requestStatusId: number | null;
+    requestStatusName: string | null;
+    totalGraduateRequirements: number;
+    completedGraduateRequirements: number;
+    acceptedGraduateRequirements: number;
+    hasRejectedGraduateRequirements: boolean;
+  } | null = null;
 
   try {
     items = await getRequestRequirements(parsedRequestId, {

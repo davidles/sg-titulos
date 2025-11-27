@@ -48,7 +48,7 @@ export async function fetchFromApi(path, options = {}) {
 async function safeParseJson(response) {
   try {
     return await response.json();
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -195,7 +195,7 @@ export async function downloadRequirementFile({ requestId, requirementInstanceId
   if (utf8Match && utf8Match[1]) {
     try {
       fileName = decodeURIComponent(utf8Match[1]);
-    } catch (error) {
+    } catch (_error) {
       fileName = utf8Match[1];
     }
   } else {

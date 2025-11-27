@@ -34,26 +34,6 @@ export default function PersonalDataStep({
       });
     };
 
-  const handleNumberInput = (field: keyof RequestFormDataPerson) =>
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const rawValue = event.target.value;
-      const parsed = rawValue === "" ? null : Number(rawValue);
-      onChange({
-        ...person,
-        [field]: Number.isNaN(parsed) ? null : parsed,
-      });
-    };
-
-  const handleSelectInput = (field: keyof RequestFormDataPerson) =>
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      const rawValue = event.target.value;
-      const parsed = rawValue === "" ? null : Number(rawValue);
-      onChange({
-        ...person,
-        [field]: Number.isNaN(parsed) ? null : parsed,
-      });
-    };
-
   const sortedCountries = useMemo(
     () => [...countries].sort((a, b) => (a.countryName ?? "").localeCompare(b.countryName ?? "", "es")),
     [countries],
