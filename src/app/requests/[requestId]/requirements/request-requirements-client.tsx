@@ -25,6 +25,7 @@ type LocalRequirementState = RequestRequirementItem & {
   successMessage: string | null;
   reviewComment: string;
   reviewing: boolean;
+  reviewingAction: "accept" | "reject" | null;
 };
 
 export default function RequestRequirementsClient({
@@ -61,8 +62,19 @@ export default function RequestRequirementsClient({
         successMessage: null,
         reviewComment: item.requirementInstance.reviewReason ?? "",
         reviewing: false,
+        reviewingAction: null,
       })),
   );
+
+  const allGraduateAccepted = useMemo(() => {
+    const graduateItems = requirements.filter((item) => item.responsibility !== "ADMINISTRATIVE");
+
+    if (!graduateItems.length) {
+      return false;
+    }
+
+    return graduateItems.every((item) => item.status?.idRequirementInstanceStatus === ACCEPTED_STATUS_ID);
+  }, [requirements]);
 
   const handleFileChange = async (
     requirementInstanceId: number,
@@ -206,6 +218,7 @@ export default function RequestRequirementsClient({
           ? {
               ...item,
               reviewing: true,
+              reviewingAction: nextStatusId === ACCEPTED_STATUS_ID ? "accept" : "reject",
               errorMessage: null,
               successMessage: null,
             }
@@ -241,6 +254,7 @@ export default function RequestRequirementsClient({
                 ...updatedItem,
                 reviewComment: reviewComment,
                 reviewing: false,
+                reviewingAction: null,
                 errorMessage: null,
                 successMessage:
                   nextStatusId === ACCEPTED_STATUS_ID
@@ -303,6 +317,12 @@ export default function RequestRequirementsClient({
         const hasFile = Boolean(requirementInstance.requirementFilePath);
         const isAccepted = status?.idRequirementInstanceStatus === ACCEPTED_STATUS_ID;
         const isRejected = status?.idRequirementInstanceStatus === REJECTED_STATUS_ID;
+        const isAdministrativeRequirement = item.responsibility === "ADMINISTRATIVE";
+
+        const isUploadDisabledForAdmin =
+          isFacultyReviewer &&
+          ((item.responsibility !== "ADMINISTRATIVE" && isRejected) ||
+            (isAdministrativeRequirement && !allGraduateAccepted));
 
         return (
           <article
@@ -339,9 +359,11 @@ export default function RequestRequirementsClient({
                 ) : successMessage ? (
                   <p className="mt-1 text-xs text-emerald-700">{successMessage}</p>
                 ) : null}
-                {isFacultyReviewer && item.requirementInstance.reviewReason ? (
+                {isRejected || item.requirementInstance.reviewReason ? (
                   <p className="mt-1 text-xs text-slate-500">
-                    Observación: {item.requirementInstance.reviewReason}
+                    Observación: {item.requirementInstance.reviewReason && item.requirementInstance.reviewReason.trim().length > 0
+                      ? item.requirementInstance.reviewReason
+                      : "Revisá este documento y volvé a cargarlo."}
                   </p>
                 ) : null}
               </div>
@@ -366,7 +388,7 @@ export default function RequestRequirementsClient({
                     type="file"
                     className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
                     onChange={(event) => handleFileChange(requirementInstance.idRequestRequirementInstance, event)}
-                    disabled={uploading}
+                    disabled={uploading || isUploadDisabledForAdmin}
                   />
                 </label>
               </div>
@@ -408,12 +430,21 @@ export default function RequestRequirementsClient({
                         item.reviewComment,
                       )
                     }
-                    disabled={item.reviewing || isAccepted}
+                    disabled={
+                      item.reviewing ||
+                      isAccepted ||
+                      isRejected ||
+                      item.reviewingAction === "reject"
+                    }
                     className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
                   >
-                    {item.reviewing ? "Guardando..." : isAccepted ? "Aceptado" : "Marcar como aceptado"}
+                    {item.reviewing && item.reviewingAction === "accept"
+                      ? "Guardando..."
+                      : isAccepted
+                        ? "Aceptado"
+                        : "Marcar como aceptado"}
                   </button>
-                  {!isAccepted && (
+                  {!isAccepted && !isRejected && (
                     <button
                       type="button"
                       onClick={() =>
@@ -423,10 +454,18 @@ export default function RequestRequirementsClient({
                           item.reviewComment,
                         )
                       }
-                      disabled={item.reviewing || isRejected}
+                      disabled={
+                        item.reviewing ||
+                        isRejected ||
+                        item.reviewingAction === "accept"
+                      }
                       className="inline-flex items-center justify-center rounded-2xl border border-red-600 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-700 hover:text-red-800 disabled:cursor-not-allowed disabled:border-red-300 disabled:text-red-300"
                     >
-                      {item.reviewing ? "Guardando..." : isRejected ? "Rechazado" : "Marcar como rechazado"}
+                      {item.reviewing && item.reviewingAction === "reject"
+                        ? "Guardando..."
+                        : isRejected
+                          ? "Rechazado"
+                          : "Marcar como rechazado"}
                     </button>
                   )}
                 </div>

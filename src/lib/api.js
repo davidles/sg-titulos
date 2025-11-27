@@ -146,6 +146,11 @@ export async function getRequestRequirements(requestId, options = {}) {
   return Array.isArray(res?.data) ? res.data : [];
 }
 
+export async function getRequestEvaluation(requestId, options = {}) {
+  const res = await fetchFromApi(`/api/requests/${requestId}/evaluation`, options);
+  return res?.data ?? null;
+}
+
 export async function uploadRequirementFile({ requestId, requirementInstanceId, formData, headers }) {
   const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/file`;
   const response = await fetch(`${getApiBaseUrl()}${url}`, {
