@@ -134,7 +134,6 @@ export default function PersonalDataStep({
 
     const city = cities.find((item) => item.idCity === normalizedValue) ?? null;
     const province = city ? provinces.find((item) => item.idProvince === city.provinceId) ?? null : null;
-    const country = province ? countries.find((item) => item.idCountry === province.countryId) ?? null : null;
 
     if (province?.idProvince && province.idProvince !== selectedProvinceId) {
       setSelectedProvinceId(province.idProvince);
