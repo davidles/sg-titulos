@@ -35,9 +35,25 @@ export default function RequestRequirementsClient({
   fetchError,
   roleId,
 }: RequestRequirementsClientProps) {
+  const isFacultyReviewer = useMemo(() => {
+    if (roleId === null || roleId === undefined) {
+      return false;
+    }
+
+    return roleId >= 200;
+  }, [roleId]);
+
+  const visibleItems = useMemo(() => {
+    if (isFacultyReviewer) {
+      return items;
+    }
+
+    return items.filter((item) => item.responsibility !== "ADMINISTRATIVE");
+  }, [items, isFacultyReviewer]);
+
   const [requirements, setRequirements] = useState<LocalRequirementState[]>(
     () =>
-      items.map((item) => ({
+      visibleItems.map((item) => ({
         ...item,
         uploading: false,
         downloading: false,
@@ -47,14 +63,6 @@ export default function RequestRequirementsClient({
         reviewing: false,
       })),
   );
-
-  const isFacultyReviewer = useMemo(() => {
-    if (roleId === null || roleId === undefined) {
-      return false;
-    }
-
-    return roleId >= 200;
-  }, [roleId]);
 
   const handleFileChange = async (
     requirementInstanceId: number,
