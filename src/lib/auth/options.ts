@@ -41,6 +41,7 @@ export const authOptions: NextAuthOptions = {
             firstName: user.firstName,
             lastName: user.lastName,
             documentNumber: user.documentNumber,
+            roleId: user.roleId,
             accessToken: token,
           } satisfies {
             id: string;
@@ -50,6 +51,7 @@ export const authOptions: NextAuthOptions = {
             firstName: string | null;
             lastName: string | null;
             documentNumber: string | null;
+            roleId: number | null;
             accessToken: string;
           };
         } catch (error) {
@@ -69,6 +71,7 @@ export const authOptions: NextAuthOptions = {
           firstName: string | null;
           lastName: string | null;
           documentNumber: string | null;
+          roleId: number | null;
           accessToken: string;
         };
 
@@ -78,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         token.firstName = typedUser.firstName ?? null;
         token.lastName = typedUser.lastName ?? null;
         token.documentNumber = typedUser.documentNumber ?? null;
+        token.roleId = typedUser.roleId ?? null;
         token.accessToken = typedUser.accessToken;
       }
 
@@ -98,6 +102,7 @@ export const authOptions: NextAuthOptions = {
           typeof token.documentNumber === "string" || token.documentNumber === null
             ? (token.documentNumber as string | null)
             : null;
+        session.user.roleId = typeof token.roleId === "number" ? token.roleId : null;
         session.user.accessToken = typeof token.accessToken === "string" ? token.accessToken : undefined;
       }
 

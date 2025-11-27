@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
-import { downloadRequirementFile, uploadRequirementFile } from "@/lib/api";
-import type { RequestRequirementItem } from "@/types/request-flow";
+import { downloadRequirementFile, uploadRequirementFile, reviewRequirement } from "@/lib/api";
+import type { RequestRequirementItem, RequirementReviewPayload } from "@/types/request-flow";
 
 type RequestRequirementsClientProps = {
   requestId: number;
@@ -11,15 +11,20 @@ type RequestRequirementsClientProps = {
   userId: number;
   accessToken: string;
   fetchError: string | null;
+  roleId: number | null | undefined;
 };
 
 const COMPLETED_STATUS_ID = 2;
+const ACCEPTED_STATUS_ID = 3;
+const REJECTED_STATUS_ID = 4;
 
 type LocalRequirementState = RequestRequirementItem & {
   uploading: boolean;
   downloading: boolean;
   errorMessage: string | null;
   successMessage: string | null;
+  reviewComment: string;
+  reviewing: boolean;
 };
 
 export default function RequestRequirementsClient({
@@ -28,6 +33,7 @@ export default function RequestRequirementsClient({
   userId,
   accessToken,
   fetchError,
+  roleId,
 }: RequestRequirementsClientProps) {
   const [requirements, setRequirements] = useState<LocalRequirementState[]>(
     () =>
@@ -37,8 +43,18 @@ export default function RequestRequirementsClient({
         downloading: false,
         errorMessage: null,
         successMessage: null,
+        reviewComment: item.requirementInstance.reviewReason ?? "",
+        reviewing: false,
       })),
   );
+
+  const isFacultyReviewer = useMemo(() => {
+    if (roleId === null || roleId === undefined) {
+      return false;
+    }
+
+    return roleId >= 200;
+  }, [roleId]);
 
   const handleFileChange = async (
     requirementInstanceId: number,
@@ -171,6 +187,81 @@ export default function RequestRequirementsClient({
     }
   };
 
+  const handleReview = async (
+    requirementInstanceId: number,
+    nextStatusId: number,
+    reviewComment: string,
+  ) => {
+    setRequirements((prev) =>
+      prev.map((item) =>
+        item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+          ? {
+              ...item,
+              reviewing: true,
+              errorMessage: null,
+              successMessage: null,
+            }
+          : item,
+      ),
+    );
+
+    const payload: RequirementReviewPayload = {
+      nextStatusId,
+      reviewReason: reviewComment || null,
+      reviewerUserId: userId,
+    };
+
+    try {
+      const updatedItem = (await reviewRequirement({
+        requestId,
+        requirementInstanceId,
+        payload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      })) as RequestRequirementItem | null;
+
+      if (!updatedItem) {
+        throw new Error("Respuesta inesperada del servidor. Intentá nuevamente.");
+      }
+
+      setRequirements((prev) =>
+        prev.map((item) =>
+          item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+            ? {
+                ...item,
+                ...updatedItem,
+                reviewComment: reviewComment,
+                reviewing: false,
+                errorMessage: null,
+                successMessage:
+                  nextStatusId === ACCEPTED_STATUS_ID
+                    ? "Requisito aceptado correctamente."
+                    : "Requisito marcado como rechazado."
+              }
+            : item,
+        ),
+      );
+    } catch (error) {
+      const fallbackMessage =
+        error instanceof Error ? error.message : "No se pudo actualizar el requisito. Intentá nuevamente.";
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      setRequirements((prev) =>
+        prev.map((item) =>
+          item.requirementInstance.idRequestRequirementInstance === requirementInstanceId
+            ? {
+                ...item,
+                reviewing: false,
+                errorMessage: apiMessage ?? fallbackMessage,
+                successMessage: null,
+              }
+            : item,
+        ),
+      );
+    }
+  };
+
   if (fetchError) {
     return (
       <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-red-700">{fetchError}</div>
@@ -238,6 +329,11 @@ export default function RequestRequirementsClient({
                 ) : successMessage ? (
                   <p className="mt-1 text-xs text-emerald-700">{successMessage}</p>
                 ) : null}
+                {isFacultyReviewer && item.requirementInstance.reviewReason ? (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Observación: {item.requirementInstance.reviewReason}
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
@@ -265,6 +361,65 @@ export default function RequestRequirementsClient({
                 </label>
               </div>
             </div>
+
+            {isFacultyReviewer && hasFile ? (
+              <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <label className="text-xs font-semibold text-slate-700" htmlFor={`review-${requirementInstance.idRequestRequirementInstance}`}>
+                  Observaciones (opcional)
+                </label>
+                <textarea
+                  id={`review-${requirementInstance.idRequestRequirementInstance}`}
+                  className="min-h-[72px] rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  value={item.reviewComment}
+                  onChange={(event) =>
+                    setRequirements((prev) =>
+                      prev.map((localItem) =>
+                        localItem.requirementInstance.idRequestRequirementInstance ===
+                        requirementInstance.idRequestRequirementInstance
+                          ? {
+                              ...localItem,
+                              reviewComment: event.target.value,
+                            }
+                          : localItem,
+                      ),
+                    )
+                  }
+                  placeholder="Ingresá un comentario para el egresado"
+                  disabled={item.reviewing}
+                />
+
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleReview(
+                        requirementInstance.idRequestRequirementInstance,
+                        ACCEPTED_STATUS_ID,
+                        item.reviewComment,
+                      )
+                    }
+                    disabled={item.reviewing}
+                    className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+                  >
+                    {item.reviewing ? "Guardando..." : "Marcar como aceptado"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleReview(
+                        requirementInstance.idRequestRequirementInstance,
+                        REJECTED_STATUS_ID,
+                        item.reviewComment,
+                      )
+                    }
+                    disabled={item.reviewing}
+                    className="inline-flex items-center justify-center rounded-2xl border border-red-600 px-4 py-2 text-sm font-semibold text-red-700 transition hover:border-red-700 hover:text-red-800 disabled:cursor-not-allowed disabled:border-red-300 disabled:text-red-300"
+                  >
+                    {item.reviewing ? "Guardando..." : "Marcar como rechazado"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </article>
         );
       })}

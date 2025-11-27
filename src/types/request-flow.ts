@@ -143,6 +143,12 @@ export interface RequirementInstanceAttributes {
   requirementFilePath: string | null;
 }
 
+export interface RequirementReviewPayload {
+  nextStatusId: number;
+  reviewReason: string | null;
+  reviewerUserId: number;
+}
+
 export interface RequestRequirementItem {
   requirementInstance: RequirementInstanceAttributes;
   requirement: {
