@@ -133,9 +133,17 @@ export default function RequestRequirementsClient({
         ),
       );
     } catch (error) {
-      const fallbackMessage =
+      let fallbackMessage =
         error instanceof Error ? error.message : "No se pudo subir el archivo. Intentá nuevamente.";
-      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+      let apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      if (apiMessage && apiMessage.includes("Aceptada por Facultad")) {
+        apiMessage = null;
+      }
+
+      if (fallbackMessage && fallbackMessage.includes("Aceptada por Facultad")) {
+        fallbackMessage = "No se pudo subir el archivo. Intentá nuevamente.";
+      }
 
       setRequirements((prev) =>
         prev.map((item) =>
@@ -265,9 +273,17 @@ export default function RequestRequirementsClient({
         ),
       );
     } catch (error) {
-      const fallbackMessage =
+      let fallbackMessage =
         error instanceof Error ? error.message : "No se pudo actualizar el requisito. Intentá nuevamente.";
-      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+      let apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+
+      if (apiMessage && apiMessage.includes("Aceptada por Facultad")) {
+        apiMessage = null;
+      }
+
+      if (fallbackMessage && fallbackMessage.includes("Aceptada por Facultad")) {
+        fallbackMessage = "No se pudo actualizar el requisito. Intentá nuevamente.";
+      }
 
       setRequirements((prev) =>
         prev.map((item) =>
@@ -380,7 +396,10 @@ export default function RequestRequirementsClient({
                   </button>
                 ) : null}
 
-                <label className="relative inline-flex cursor-pointer items-center justify-center rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300">
+                <label
+                  className={`relative inline-flex items-center justify-center rounded-2xl px-4 py-2 text-sm font-semibold text-white shadow-sm transition
+                  ${uploading || isUploadDisabledForAdmin ? "cursor-not-allowed bg-blue-300" : "cursor-pointer bg-blue-700 hover:bg-blue-800"}`}
+                >
                   <span>
                     {uploading ? "Subiendo archivo..." : hasFile ? "Reemplazar archivo" : "Subir archivo"}
                   </span>
