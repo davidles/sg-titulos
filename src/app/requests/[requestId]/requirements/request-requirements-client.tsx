@@ -2,7 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-import { downloadRequirementFile, uploadRequirementFile, reviewRequirement } from "@/lib/api";
+import {
+  downloadRequirementFile,
+  uploadRequirementFile,
+  reviewRequirement,
+  markDiplomaReady,
+  markDiplomaDelivered,
+} from "@/lib/api";
 import type { RequestRequirementItem, RequirementReviewPayload } from "@/types/request-flow";
 
 type RequestRequirementsClientProps = {
@@ -12,6 +18,7 @@ type RequestRequirementsClientProps = {
   accessToken: string;
   fetchError: string | null;
   roleId: number | null | undefined;
+  requestStatusName: string | null;
 };
 
 const COMPLETED_STATUS_ID = 2;
@@ -35,6 +42,7 @@ export default function RequestRequirementsClient({
   accessToken,
   fetchError,
   roleId,
+  requestStatusName,
 }: RequestRequirementsClientProps) {
   const isFacultyReviewer = useMemo(() => {
     if (roleId === null || roleId === undefined) {
@@ -44,12 +52,16 @@ export default function RequestRequirementsClient({
     return roleId >= 200;
   }, [roleId]);
 
+  // UNDEF audita el tramite completo: puede validar tambien lo que subieron
+  // Facultad y Secretaria General, no solo lo que subio el egresado.
+  const isUndefReviewer = useMemo(() => roleId === 230, [roleId]);
+
   const visibleItems = useMemo(() => {
     if (isFacultyReviewer) {
       return items;
     }
 
-    return items.filter((item) => item.responsibility !== "ADMINISTRATIVE");
+    return items.filter((item) => item.responsibility === "GRADUATE");
   }, [items, isFacultyReviewer]);
 
   const [requirements, setRequirements] = useState<LocalRequirementState[]>(
@@ -67,7 +79,7 @@ export default function RequestRequirementsClient({
   );
 
   const allGraduateAccepted = useMemo(() => {
-    const graduateItems = requirements.filter((item) => item.responsibility !== "ADMINISTRATIVE");
+    const graduateItems = requirements.filter((item) => item.responsibility === "GRADUATE");
 
     if (!graduateItems.length) {
       return false;
@@ -75,6 +87,48 @@ export default function RequestRequirementsClient({
 
     return graduateItems.every((item) => item.status?.idRequirementInstanceStatus === ACCEPTED_STATUS_ID);
   }, [requirements]);
+
+  const [diplomaStatusName, setDiplomaStatusName] = useState(requestStatusName);
+  const [diplomaActionLoading, setDiplomaActionLoading] = useState(false);
+  const [diplomaActionError, setDiplomaActionError] = useState<string | null>(null);
+
+  const handleMarkDiplomaReady = async () => {
+    setDiplomaActionLoading(true);
+    setDiplomaActionError(null);
+
+    try {
+      await markDiplomaReady(requestId, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setDiplomaStatusName("Pendiente de Retiro");
+    } catch (error) {
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+      setDiplomaActionError(
+        apiMessage ?? (error instanceof Error ? error.message : "No se pudo actualizar la solicitud."),
+      );
+    } finally {
+      setDiplomaActionLoading(false);
+    }
+  };
+
+  const handleMarkDiplomaDelivered = async () => {
+    setDiplomaActionLoading(true);
+    setDiplomaActionError(null);
+
+    try {
+      await markDiplomaDelivered(requestId, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setDiplomaStatusName("Finalizada");
+    } catch (error) {
+      const apiMessage = (error as { body?: { message?: string } })?.body?.message ?? null;
+      setDiplomaActionError(
+        apiMessage ?? (error instanceof Error ? error.message : "No se pudo actualizar la solicitud."),
+      );
+    } finally {
+      setDiplomaActionLoading(false);
+    }
+  };
 
   const handleFileChange = async (
     requirementInstanceId: number,
@@ -318,8 +372,44 @@ export default function RequestRequirementsClient({
     );
   }
 
+  const showMarkReadyAction = isUndefReviewer && diplomaStatusName === "En Confección de Diploma";
+  const showMarkDeliveredAction = isUndefReviewer && diplomaStatusName === "Pendiente de Retiro";
+
   return (
     <div className="space-y-4">
+      {showMarkReadyAction || showMarkDeliveredAction ? (
+        <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 shadow-sm sm:p-6">
+          <h2 className="text-sm font-semibold text-slate-900">Confección y entrega del diploma</h2>
+          <p className="mt-1 text-xs text-slate-600">
+            Este paso no tiene un documento asociado: marcalo manualmente cuando corresponda.
+          </p>
+          {diplomaActionError ? (
+            <p className="mt-2 text-xs text-red-700">{diplomaActionError}</p>
+          ) : null}
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            {showMarkReadyAction ? (
+              <button
+                type="button"
+                onClick={handleMarkDiplomaReady}
+                disabled={diplomaActionLoading}
+                className="inline-flex items-center justify-center rounded-2xl bg-blue-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-blue-300"
+              >
+                {diplomaActionLoading ? "Guardando..." : "Marcar diploma listo para retiro"}
+              </button>
+            ) : null}
+            {showMarkDeliveredAction ? (
+              <button
+                type="button"
+                onClick={handleMarkDiplomaDelivered}
+                disabled={diplomaActionLoading}
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+              >
+                {diplomaActionLoading ? "Guardando..." : "Marcar diploma entregado"}
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
       {requirements.map((item) => {
         const {
           requirementInstance,
@@ -333,11 +423,11 @@ export default function RequestRequirementsClient({
         const hasFile = Boolean(requirementInstance.requirementFilePath);
         const isAccepted = status?.idRequirementInstanceStatus === ACCEPTED_STATUS_ID;
         const isRejected = status?.idRequirementInstanceStatus === REJECTED_STATUS_ID;
-        const isAdministrativeRequirement = item.responsibility === "ADMINISTRATIVE";
+        const isAdministrativeRequirement = item.responsibility !== "GRADUATE";
 
         const isUploadDisabledForAdmin =
           isFacultyReviewer &&
-          ((item.responsibility !== "ADMINISTRATIVE" && isRejected) ||
+          ((item.responsibility === "GRADUATE" && isRejected) ||
             (isAdministrativeRequirement && !allGraduateAccepted));
 
         return (
@@ -413,7 +503,9 @@ export default function RequestRequirementsClient({
               </div>
             </div>
 
-            {isFacultyReviewer && hasFile && item.responsibility !== "ADMINISTRATIVE" ? (
+            {hasFile &&
+            ((item.responsibility === "GRADUATE" && isFacultyReviewer) ||
+              (item.responsibility !== "GRADUATE" && isUndefReviewer)) ? (
               <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <label className="text-xs font-semibold text-slate-700" htmlFor={`review-${requirementInstance.idRequestRequirementInstance}`}>
                   Observaciones (opcional)

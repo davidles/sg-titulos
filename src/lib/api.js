@@ -151,6 +151,28 @@ export async function getRequestEvaluation(requestId, options = {}) {
   return res?.data ?? null;
 }
 
+export async function markDiplomaReady(requestId, options = {}) {
+  const res = await fetchFromApi(`/api/requests/${requestId}/diploma/ready`, {
+    method: "POST",
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+    },
+  });
+  return res?.data ?? null;
+}
+
+export async function markDiplomaDelivered(requestId, options = {}) {
+  const res = await fetchFromApi(`/api/requests/${requestId}/diploma/delivered`, {
+    method: "POST",
+    ...options,
+    headers: {
+      ...(options.headers ?? {}),
+    },
+  });
+  return res?.data ?? null;
+}
+
 export async function uploadRequirementFile({ requestId, requirementInstanceId, formData, headers }) {
   const url = `/api/requests/${requestId}/requirements/${requirementInstanceId}/file`;
   const response = await fetch(`${getApiBaseUrl()}${url}`, {
