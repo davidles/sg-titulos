@@ -160,7 +160,7 @@ export interface RequestRequirementItem {
     idRequirementInstanceStatus: number;
     requirementInstanceStatusName: string | null;
   } | null;
-  responsibility?: 'GRADUATE' | 'ADMINISTRATIVE';
+  responsibility?: 'GRADUATE' | 'FACULTY' | 'SECRETARIA_GENERAL';
 }
 
 export interface RequirementAttributes {

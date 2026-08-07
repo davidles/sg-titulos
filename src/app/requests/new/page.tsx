@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 
@@ -55,6 +56,15 @@ export default async function NewRequestPage() {
         accessToken={accessToken}
         fetchError={fetchError}
       />
+
+      <div className="mt-8 flex justify-end">
+        <Link
+          href="/dashboard"
+          className="rounded-2xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-blue-700 hover:text-blue-700"
+        >
+          Volver al inicio
+        </Link>
+      </div>
     </div>
   );
 }
